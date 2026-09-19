@@ -93,24 +93,6 @@
         .msg.jarvis { color: #00f0ff; }
         .msg.user { color: #ffffff; text-align: right; }
 
-        /* Botón interactivo dentro del chat para abrir la búsqueda sin bloqueos */
-        .search-link {
-            display: inline-block;
-            margin-top: 6px;
-            padding: 4px 10px;
-            background: rgba(0, 240, 255, 0.15);
-            border: 1px solid #00f0ff;
-            border-radius: 4px;
-            color: #00f0ff;
-            text-decoration: none;
-            font-size: 11px;
-            transition: 0.2s;
-        }
-        .search-link:hover {
-            background: #00f0ff;
-            color: #020813;
-        }
-
         /* Barra Inferior Interactiva */
         #bottom-bar {
             position: absolute;
@@ -307,7 +289,7 @@
             testMat.color.setHex(0x00ff66);
         }
 
-        // --- 4. SÍNTESIS DE VOZ (USA TU VOZ DE SIRI MASCULINA SELECCIONADA) ---
+        // --- 4. SÍNTESIS DE VOZ (VOZ MASCULINA NATURAL) ---
         function speakJarvis(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -390,7 +372,7 @@
             try { recognition.start(); } catch(e) {}
         }
 
-        // --- 6. PROCESADOR INTELIGENTE CON BÚSQUEDA LIMPIA DE TEMA ---
+        // --- 6. PROCESADOR INTELIGENTE CON REDIRECCIÓN AUTOMÁTICA A GOOGLE ---
         async function processJarvisCommand(command) {
             const lower = command.toLowerCase();
             const isJarvisCalled = lower.includes("jarvis");
@@ -410,7 +392,7 @@
                 speakJarvis(speechText + "Sistemas operativos en línea, señor.");
             }
             else {
-                // LIMPIEZA INTELIGENTE: Extrae únicamente el término central de búsqueda
+                // LIMPIEZA INTELIGENTE: Elimina comandos para buscar únicamente el tema clave
                 let queryClean = command
                     .replace(/jarvis/gi, "")
                     .replace(/investiga sobre/gi, "")
@@ -424,13 +406,13 @@
 
                 const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(queryClean)}`;
                 
-                addChatMessage(`JARVIS: Red dirigida a: "${queryClean}".`, "jarvis");
-                speakJarvis(speechText + `Buscando información sobre ${queryClean}.`);
+                addChatMessage(`JARVIS: Investigando en red: "${queryClean}".`, "jarvis");
+                speakJarvis(speechText + `Investigando sobre ${queryClean}. Redirigiendo.`);
                 
+                // Redirección automática inmediata a Google en la misma pestaña de Safari
                 setTimeout(() => {
-                    const htmlResponse = `JARVIS: Investigación completada.<br><a href="${searchUrl}" target="_blank" class="search-link">🌐 Consultar red: ${queryClean}</a>`;
-                    addChatMessage(htmlResponse, "jarvis", true);
-                }, 500);
+                    window.location.href = searchUrl;
+                }, 1000);
             }
         }
 
