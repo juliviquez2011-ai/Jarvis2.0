@@ -79,7 +79,7 @@
             position: absolute;
             top: 100px;
             left: 30px;
-            width: 380px;
+            width: 400px;
             max-height: 45vh;
             overflow-y: auto;
             background: rgba(2, 8, 19, 0.85);
@@ -92,6 +92,24 @@
         .msg { margin-bottom: 12px; line-height: 1.4; }
         .msg.jarvis { color: #00f0ff; }
         .msg.user { color: #ffffff; text-align: right; }
+
+        /* Botón interactivo dentro del chat para abrir la búsqueda sin bloqueos */
+        .search-link {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 4px 10px;
+            background: rgba(0, 240, 255, 0.15);
+            border: 1px solid #00f0ff;
+            border-radius: 4px;
+            color: #00f0ff;
+            text-decoration: none;
+            font-size: 11px;
+            transition: 0.2s;
+        }
+        .search-link:hover {
+            background: #00f0ff;
+            color: #020813;
+        }
 
         /* Barra Inferior Interactiva */
         #bottom-bar {
@@ -266,11 +284,15 @@
             if (e.key === 'Enter') sendPrompt();
         }
 
-        function addChatMessage(text, sender) {
+        function addChatMessage(text, sender, isHtml = false) {
             const chat = document.getElementById('jarvis-chat');
             const div = document.createElement('div');
             div.className = `msg ${sender}`;
-            div.innerText = text;
+            if (isHtml) {
+                div.innerHTML = text;
+            } else {
+                div.innerText = text;
+            }
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
         }
@@ -285,34 +307,20 @@
             testMat.color.setHex(0x00ff66);
         }
 
-        // --- 4. SÍNTESIS DE VOZ MASCULINA FORZADA (GRAVE Y LIMPIA) ---
+        // --- 4. SÍNTESIS DE VOZ (USA TU VOZ DE SIRI MASCULINA SELECCIONADA) ---
         function speakJarvis(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const cleanText = text.replace(/["'«»]/g, '');
                 const speech = new SpeechSynthesisUtterance(cleanText);
                 
-                speech.lang = 'es-MX';
-                speech.rate = 0.95; 
-                speech.pitch = 0.4; // Tono grave forzado para simular voz masculina
+                speech.lang = 'es-ES';
+                speech.rate = 1.0;
+                speech.pitch = 1.0; 
 
                 let voices = window.speechSynthesis.getVoices();
-                let selectedVoice = voices.find(v => 
-                    v.lang.startsWith('es') && (
-                        v.name.toLowerCase().includes('male') || 
-                        v.name.toLowerCase().includes('pablo') || 
-                        v.name.toLowerCase().includes('raul') || 
-                        v.name.toLowerCase().includes('carlos') || 
-                        v.name.toLowerCase().includes('alonso') ||
-                        v.name.toLowerCase().includes('jorge') ||
-                        v.name.toLowerCase().includes('microsoft es-mx')
-                    )
-                );
-
-                if (!selectedVoice && voices.length > 0) {
-                    const spanishVoices = voices.filter(v => v.lang.startsWith('es'));
-                    selectedVoice = spanishVoices[spanishVoices.length - 1];
-                }
+                // Safari detectará automáticamente la voz masculina que configuraste en tu iPad
+                let selectedVoice = voices.find(v => v.lang.startsWith('es') && (v.name.includes('Voice 1') || v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo'))) || voices.find(v => v.lang.startsWith('es'));
 
                 if (selectedVoice) {
                     speech.voice = selectedVoice;
@@ -383,39 +391,38 @@
             try { recognition.start(); } catch(e) {}
         }
 
-        // --- 6. PROCESADOR INTELIGENTE SIN FRASES REPETITIVAS ---
+        // --- 6. PROCESADOR INTELIGENTE DE CONSULTAS ---
         async function processJarvisCommand(command) {
             const lower = command.toLowerCase();
             const isJarvisCalled = lower.includes("jarvis");
 
-            let replyText = "";
             let speechText = "";
-
             if (isJarvisCalled) {
                 speechText += "A la orden, señor. ";
             }
 
             if (lower.includes("diseña") || lower.includes("crea") || lower.includes("modelo")) {
-                replyText = "JARVIS: Diseñando estructura CAD en el visor holográfico.";
-                speechText += "Generando diseño estructural en el visor.";
+                addChatMessage("JARVIS: Diseñando estructura CAD en el visor holográfico.", "jarvis");
+                speakJarvis(speechText + "Generando diseño estructural en el visor.");
                 setTimeout(() => { testMat.color.setHex(0xff0055); }, 1200);
             } 
             else if (lower.includes("hola") || lower.includes("saludos")) {
-                replyText = "JARVIS: Sistemas operativos funcionando de manera óptima, señor.";
-                speechText += "Sistemas operativos en línea, señor.";
+                addChatMessage("JARVIS: Sistemas operativos funcionando de manera óptima, señor.", "jarvis");
+                speakJarvis(speechText + "Sistemas operativos en línea, señor.");
             }
             else {
                 const queryClean = command.replace(/jarvis/gi, "").trim();
-                replyText = `JARVIS: Consultando red global para: "${queryClean}"`;
-                speechText += `Buscando información en la red, señor.`;
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(queryClean)}`;
                 
+                addChatMessage(`JARVIS: Análisis de red completado para "${queryClean}", señor.`, "jarvis");
+                speakJarvis(speechText + "Información procesada. Enlace de investigación generado en pantalla.");
+                
+                // Genera un botón interactivo seguro que Safari no bloquea
                 setTimeout(() => {
-                    window.open(`https://www.google.com/search?q=${encodeURIComponent(queryClean)}`, '_blank');
-                }, 1000);
+                    const htmlResponse = `JARVIS: Resultados de red listos.<br><a href="${searchUrl}" target="_blank" class="search-link">🌐 Abrir investigación en Google</a>`;
+                    addChatMessage(htmlResponse, "jarvis", true);
+                }, 500);
             }
-
-            addChatMessage(replyText, "jarvis");
-            speakJarvis(speechText);
         }
 
         window.addEventListener('resize', () => {
@@ -426,7 +433,3 @@
     </script>
 </body>
 </html>
-
-
-
-
