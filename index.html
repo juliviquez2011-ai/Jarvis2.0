@@ -235,7 +235,7 @@
         }
         animateSlot3D();
 
-        // --- 3. LÓGICA DE INTERACCIÓN Y BÚSQUEDA WEB INTELIGENTE ---
+        // --- 3. LÓGICA DE INTERACCIÓN ---
         function triggerCamera() {
             document.getElementById('camera-input').click();
         }
@@ -285,25 +285,43 @@
             testMat.color.setHex(0x00ff66);
         }
 
+        // --- 4. SÍNTESIS DE VOZ MASCULINA FORZADA ---
         function speakJarvis(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const cleanText = text.replace(/["'«»]/g, '');
                 const speech = new SpeechSynthesisUtterance(cleanText);
+                
                 speech.lang = 'es-MX';
                 speech.rate = 1.0;
-                speech.pitch = 0.9;
+                speech.pitch = 0.7; // Tono más grave/masculino
 
                 const voices = window.speechSynthesis.getVoices();
-                const latinoVoice = voices.find(v => v.lang.includes('es') && (v.name.includes('Mexico') || v.name.includes('Latino') || v.name.includes('Pablo') || v.name.includes('Raul') || v.name.includes('Google')));
-                if (latinoVoice) {
-                    speech.voice = latinoVoice;
+                // Filtro estricto para buscar una voz masculina o neutra en español
+                const maleVoice = voices.find(v => 
+                    v.lang.includes('es') && 
+                    (v.name.toLowerCase().includes('male') || 
+                     v.name.toLowerCase().includes('pablo') || 
+                     v.name.toLowerCase().includes('raul') || 
+                     v.name.toLowerCase().includes('carlos') || 
+                     v.name.toLowerCase().includes('alonso') ||
+                     v.name.toLowerCase().includes('microsoft sabina') == false && v.name.toLowerCase().includes('helena') == false)
+                ) || voices.find(v => v.lang.includes('es'));
+
+                if (maleVoice) {
+                    speech.voice = maleVoice;
                 }
+
                 window.speechSynthesis.speak(speech);
             }
         }
 
-        // --- 4. RECONOCIMIENTO DE VOZ Y WAKE WORD ---
+        // Cargar voces por si el navegador tarda en listarlas
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {};
+        }
+
+        // --- 5. RECONOCIMIENTO DE VOZ Y WAKE WORD ---
         let recognition = null;
         let isListeningActive = false;
 
@@ -358,40 +376,43 @@
             try { recognition.start(); } catch(e) {}
         }
 
-        // --- 5. PROCESADOR INTELIGENTE CON BÚSQUEDA WEB Y PROTOCOLO "SEÑOR" ---
+        // --- 6. PROCESADOR INTELIGENTE SIN FRASES REPETITIVAS ---
         async function processJarvisCommand(command) {
             const lower = command.toLowerCase();
             
-            // Detecta si inicia con la orden de respeto
-            const isDirectCommand = lower.startsWith("jarvis") || lower.includes("jarvis");
+            // Verifica si incluye la palabra clave "Jarvis" para aplicar el protocolo "A la orden, señor"
+            const isJarvisCalled = lower.includes("jarvis");
 
-            if (isDirectCommand) {
-                speakJarvis("A la orden, señor.");
+            let replyText = "";
+            let speechText = "";
+
+            if (isJarvisCalled) {
+                speechText += "A la orden, señor. ";
             }
 
-            // Comandos internos de diseño CAD
+            // Procesamiento inteligente según lo que pidas
             if (lower.includes("diseña") || lower.includes("crea") || lower.includes("modelo")) {
-                addChatMessage("JARVIS: Generando código CAD optimizado...", "jarvis");
-                speakJarvis("Generando diseño estructural en el visor.");
+                replyText = "JARVIS: Diseñando estructura CAD en el visor holográfico.";
+                speechText += "Generando diseño estructural en el visor.";
                 setTimeout(() => { testMat.color.setHex(0xff0055); }, 1200);
             } 
             else if (lower.includes("hola") || lower.includes("saludos")) {
-                addChatMessage("JARVIS: Saludos, señor. Sistemas principales operando al 100%.", "jarvis");
-                speakJarvis("Saludos, señor. Todo en orden.");
+                replyText = "JARVIS: Sistemas operativos funcionando de manera óptima, señor.";
+                speechText += "Sistemas operativos en línea, señor.";
             }
             else {
-                // Si pregunta algo general, realiza búsqueda o abre la consulta en la red
-                addChatMessage("JARVIS: Buscando en la red global...", "jarvis");
-                speakJarvis("Buscando información en la red, señor.");
+                // Consulta general / Búsqueda web real
+                const queryClean = command.replace(/jarvis/gi, "").trim();
+                replyText = `JARVIS: Consultando red global para: "${queryClean}"`;
+                speechText += `Buscando información en la red, señor.`;
                 
-                // Abre una pestaña de búsqueda de Google con la consulta de forma automática para complementar la web app
                 setTimeout(() => {
-                    const queryClean = command.replace(/jarvis/gi, "").trim();
                     window.open(`https://www.google.com/search?q=${encodeURIComponent(queryClean)}`, '_blank');
-                    addChatMessage("JARVIS: Resultados desplegados en nueva ventana de red.", "jarvis");
-                    speakJarvis("Resultados listos, señor.");
                 }, 1000);
             }
+
+            addChatMessage(replyText, "jarvis");
+            speakJarvis(speechText);
         }
 
         window.addEventListener('resize', () => {
@@ -402,5 +423,6 @@
     </script>
 </body>
 </html>
+
 
 
