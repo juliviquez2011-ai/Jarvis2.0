@@ -43,16 +43,15 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            width: 320px;
-            height: 240px;
+            width: 340px;
+            height: 260px;
             border: 2px dashed rgba(0, 240, 255, 0.5);
-            background: rgba(2, 8, 19, 0.85);
+            background: rgba(2, 8, 19, 0.9);
             border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 10px;
+            padding: 8px;
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
@@ -62,14 +61,28 @@
         }
         #viewer-3d {
             width: 100%;
-            height: 180px;
+            height: 140px;
             background: #000;
-            border-radius: 8px;
+            border-radius: 6px;
             position: relative;
+        }
+        /* Consola de Código CAD Interna */
+        #cad-code-display {
+            width: 100%;
+            height: 75px;
+            background: rgba(0, 10, 25, 0.9);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 4px;
+            margin-top: 6px;
+            padding: 5px;
+            font-size: 10px;
+            color: #00ff66;
+            overflow: hidden;
+            white-space: pre-wrap;
         }
         .slot-title {
             font-size: 11px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             letter-spacing: 1px;
             color: #00f0ff;
         }
@@ -159,6 +172,7 @@
         <div id="top-right-slot" class="interactive" ondragover="allowDrop(event)" ondragleave="removeDropEffect(event)" ondrop="dropCode(event)">
             <div class="slot-title">SLOT 3D & COMPILADOR CAD</div>
             <div id="viewer-3d"></div>
+            <div id="cad-code-display">// Sistema CAD en espera...\n> Listo para compilar geometrías.</div>
         </div>
 
         <!-- Barra Inferior de Control -->
@@ -213,7 +227,7 @@
         }
         animateHolo();
 
-        // --- 2. VISOR 3D SUPERIOR DERECHO ---
+        // --- 2. VISOR 3D SUPERIOR DERECHO (GEOMETRÍA Y GRUPO DINÁMICO) ---
         const viewerContainer = document.getElementById('viewer-3d');
         const scene3D = new THREE.Scene();
         const camera3D = new THREE.PerspectiveCamera(75, viewerContainer.clientWidth / viewerContainer.clientHeight, 0.1, 1000);
@@ -221,21 +235,72 @@
         renderer3D.setSize(viewerContainer.clientWidth, viewerContainer.clientHeight);
         viewerContainer.appendChild(renderer3D.domElement);
 
-        const testGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
-        const testMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true });
-        const testMesh = new THREE.Mesh(testGeo, testMat);
-        scene3D.add(testMesh);
-        camera3D.position.z = 3;
+        let activeMeshGroup = new THREE.Group();
+        scene3D.add(activeMeshGroup);
+        camera3D.position.z = 3.5;
+
+        function updateVisorModel(type) {
+            // Limpiar grupo anterior
+            while(activeMeshGroup.children.length > 0){ 
+                activeMeshGroup.remove(activeMeshGroup.children[0]); 
+            }
+
+            if (type === 'armor') {
+                // Simulación de Ensamblaje de Traje / Armadura con múltiples piezas (Placas Mark)
+                const matGold = new THREE.MeshBasicMaterial({ color: 0xffaa00, wireframe: true });
+                const matRed = new THREE.MeshBasicMaterial({ color: 0xff0033, wireframe: true });
+
+                const chestBox = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.6), matRed);
+                chestBox.position.set(0, 0, 0);
+
+                const helmetBox = new THREE.Mesh(new THREE.DodecahedronGeometry(0.5), matGold);
+                helmetBox.position.set(0, 1.0, 0);
+
+                const shoulderL = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), matGold);
+                shoulderL.position.set(-0.7, 0.5, 0);
+
+                const shoulderR = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), matGold);
+                shoulderR.position.set(0.7, 0.5, 0);
+
+                activeMeshGroup.add(chestBox);
+                activeMeshGroup.add(helmetBox);
+                activeMeshGroup.add(shoulderL);
+                activeMeshGroup.add(shoulderR);
+
+            } else {
+                let geom, mat;
+                if (type === 'sphere') {
+                    geom = new THREE.SphereGeometry(1.0, 16, 16);
+                    mat = new THREE.MeshBasicMaterial({ color: 0x00ffcc, wireframe: true });
+                } else if (type === 'cylinder') {
+                    geom = new THREE.CylinderGeometry(0.8, 0.8, 1.5, 16);
+                    mat = new THREE.MeshBasicMaterial({ color: 0xffaa00, wireframe: true });
+                } else if (type === 'torus') {
+                    geom = new THREE.TorusGeometry(0.9, 0.3, 16, 32);
+                    mat = new THREE.MeshBasicMaterial({ color: 0xff0055, wireframe: true });
+                } else {
+                    geom = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+                    mat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true });
+                }
+                const singleMesh = new THREE.Mesh(geom, mat);
+                activeMeshGroup.add(singleMesh);
+            }
+        }
+
+        // Inicializar con cubo predeterminado
+        updateVisorModel('box');
 
         function animateSlot3D() {
             requestAnimationFrame(animateSlot3D);
-            testMesh.rotation.x += 0.01;
-            testMesh.rotation.y += 0.01;
+            if (activeMeshGroup) {
+                activeMeshGroup.rotation.x += 0.008;
+                activeMeshGroup.rotation.y += 0.012;
+            }
             renderer3D.render(scene3D, camera3D);
         }
         animateSlot3D();
 
-        // --- 3. LÓGICA DE INTERACCIÓN ---
+        // --- 3. LÓGICA DE INTERACCIÓN Y CÓDIGO CAD ---
         function triggerCamera() {
             document.getElementById('camera-input').click();
         }
@@ -279,6 +344,11 @@
             chat.scrollTop = chat.scrollHeight;
         }
 
+        function updateCadCode(codeText) {
+            const codeBox = document.getElementById('cad-code-display');
+            codeBox.innerText = codeText;
+        }
+
         function allowDrop(ev) { ev.preventDefault(); document.getElementById('top-right-slot').classList.add('drag-over'); }
         function removeDropEffect(ev) { document.getElementById('top-right-slot').classList.remove('drag-over'); }
         function dropCode(ev) {
@@ -286,10 +356,11 @@
             removeDropEffect(ev);
             addChatMessage("JARVIS: Código recibido en el slot CAD. Compilando modelo...", "jarvis");
             speakJarvis("A la orden, señor. Compilando modelo en el visor.");
-            testMat.color.setHex(0x00ff66);
+            updateVisorModel('box');
+            updateCadCode("// Archivo Externo Compilado\nMesh.loadBox(1.2);\nStatus: OK");
         }
 
-        // --- 4. SÍNTESIS DE VOZ SINCRONIZADA (EVITA CORTES AL REDIRIGIR) ---
+        // --- 4. SÍNTESIS DE VOZ SINCRONIZADA ---
         function speakJarvis(text, onFinished = null) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -378,7 +449,7 @@
             try { recognition.start(); } catch(e) {}
         }
 
-        // --- 6. PROCESADOR INTELIGENTE CON REDIRECCIÓN ESPERANDO A QUE TERMINE DE HABLAR ---
+        // --- 6. PROCESADOR INTELIGENTE CON PROTOCOLO DE ARMADURA Y MODELOS ---
         async function processJarvisCommand(command) {
             const lower = command.toLowerCase();
             const isJarvisCalled = lower.includes("jarvis");
@@ -388,37 +459,80 @@
                 speechText += "A la orden, señor. ";
             }
 
-            if (lower.includes("diseña") || lower.includes("crea") || lower.includes("modelo")) {
-                addChatMessage("JARVIS: Diseñando estructura CAD en el visor holográfico.", "jarvis");
-                speakJarvis(speechText + "Generando diseño estructural en el visor.");
-                setTimeout(() => { testMat.color.setHex(0xff0055); }, 1200);
+            // CASO A: PROTOCOLO DE TRAJE / ARMADURA
+            if (lower.includes("traje") || lower.includes("armadura") || lower.includes("mark")) {
+                updateVisorModel('armor');
+                updateCadCode("// PROTOCOLO DE ARMADURA STARK\nAssembly.loadArmorMatrix();\nServos: Calibrados [OK]");
+
+                addChatMessage("JARVIS: Iniciando protocolo de despliegue de armadura en visor CAD.", "jarvis");
+                speakJarvis(speechText + "Iniciando protocolo de ensamblaje de armadura, señor.");
+            }
+            // CASO B: DISEÑAR / CREAR / MODELAR OTRAS FIGURAS
+            else if (lower.includes("diseña") || lower.includes("crea") || lower.includes("modelo")) {
+                let shapeType = 'box';
+                let shapeName = 'cubo';
+                let codeSnippet = '// Estructura Rectangular\nGeometry.createBox(1.2);\nMatrix.applyTransform();';
+
+                if (lower.includes("esfera") || lower.includes("bola") || lower.includes("circulo")) {
+                    shapeType = 'sphere';
+                    shapeName = 'esfera';
+                    codeSnippet = '// Núcleo Esférico Radial\nGeometry.createSphere(1.0);\nShader.applyWireframe();';
+                } else if (lower.includes("cilindro") || lower.includes("tubo")) {
+                    shapeType = 'cylinder';
+                    shapeName = 'cilindro';
+                    codeSnippet = '// Componente Cilíndrico\nGeometry.createCylinder(0.8, 1.5);\nAxis.alignZ();';
+                } else if (lower.includes("anillo") || lower.includes("aro") || lower.includes("toro")) {
+                    shapeType = 'torus';
+                    shapeName = 'anillo toroidal';
+                    codeSnippet = '// Estructura Toroidal\nGeometry.createTorus(0.9, 0.3);\nRotation.setAngle(45);';
+                }
+
+                updateVisorModel(shapeType);
+                updateCadCode(codeSnippet);
+
+                addChatMessage(`JARVIS: Generando modelo de ${shapeName} en visor CAD.`, "jarvis");
+                speakJarvis(speechText + `Generando diseño de ${shapeName} en el visor.`);
             } 
-            else if (lower.includes("hola") || lower.includes("saludos")) {
+            // CASO C: SALUDOS
+            else if (lower.includes("hola") || lower.includes("saludos") || lower.includes("buenos días")) {
                 addChatMessage("JARVIS: Sistemas operativos funcionando de manera óptima, señor.", "jarvis");
                 speakJarvis(speechText + "Sistemas operativos en línea, señor.");
             }
-            else {
-                // LIMPIEZA INTELIGENTE: Extrae únicamente el término clave
+            // CASO D: AGRADECIMIENTOS
+            else if (lower.includes("gracias") || lower.includes("muchas gracias")) {
+                addChatMessage("JARVIS: A su servicio, señor.", "jarvis");
+                speakJarvis(speechText + "A su servicio, señor. Para eso estamos.");
+            }
+            // CASO E: BÚSQUEDA / INVESTIGACIÓN
+            else if (lower.includes("investiga") || lower.includes("busca") || lower.includes("qué es") || lower.includes("como es")) {
                 let queryClean = command
                     .replace(/jarvis/gi, "")
+                    .replace(/investiga profundamente sobre/gi, "")
                     .replace(/investiga sobre/gi, "")
                     .replace(/investiga el/gi, "")
+                    .replace(/investiga la/gi, "")
                     .replace(/investiga/gi, "")
                     .replace(/busca sobre/gi, "")
+                    .replace(/busca el/gi, "")
+                    .replace(/busca la/gi, "")
                     .replace(/busca/gi, "")
-                    .replace(/el /gi, "")
-                    .replace(/la /gi, "")
+                    .replace(/qué es/gi, "")
+                    .replace(/cómo es/gi, "")
                     .trim();
 
                 const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(queryClean)}`;
                 
                 addChatMessage(`JARVIS: Investigando en red: "${queryClean}".`, "jarvis");
                 
-                // Habla la frase completa y abre Google justo cuando termine de hablar
                 const spokenMessage = speechText + `Investigando sobre ${queryClean}.`;
                 speakJarvis(spokenMessage, () => {
                     window.location.href = searchUrl;
                 });
+            }
+            // CASO F: OTROS
+            else {
+                addChatMessage("JARVIS: Comando recibido, señor. Usa 'diseña traje' o 'investiga'.", "jarvis");
+                speakJarvis(speechText + "Comando recibido, señor.");
             }
         }
 
@@ -430,5 +544,6 @@
     </script>
 </body>
 </html>
+
 
 
