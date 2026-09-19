@@ -177,7 +177,7 @@
 
         <!-- Barra Inferior de Control -->
         <div id="bottom-bar">
-            <button class="hud-btn" onclick="triggerCamera()" title="Capturar Cámara">📷 +</button>
+            <button class="hud-btn" onclick="triggerCamera()" title="Capturar Cámara (Análisis de Objeto)">📷 +</button>
             <input type="file" id="camera-input" accept="image/*" capture="environment" onchange="handleImage(event)">
             
             <input type="text" id="user-input" placeholder="Comando para JARVIS o di 'Jarvis'..." onkeypress="checkEnter(event)">
@@ -240,25 +240,19 @@
         camera3D.position.z = 3.5;
 
         function updateVisorModel(type) {
-            // Limpiar grupo anterior
             while(activeMeshGroup.children.length > 0){ 
                 activeMeshGroup.remove(activeMeshGroup.children[0]); 
             }
 
             if (type === 'armor') {
-                // Simulación de Ensamblaje de Traje / Armadura con múltiples piezas (Placas Mark)
                 const matGold = new THREE.MeshBasicMaterial({ color: 0xffaa00, wireframe: true });
                 const matRed = new THREE.MeshBasicMaterial({ color: 0xff0033, wireframe: true });
-
                 const chestBox = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.6), matRed);
                 chestBox.position.set(0, 0, 0);
-
                 const helmetBox = new THREE.Mesh(new THREE.DodecahedronGeometry(0.5), matGold);
                 helmetBox.position.set(0, 1.0, 0);
-
                 const shoulderL = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), matGold);
                 shoulderL.position.set(-0.7, 0.5, 0);
-
                 const shoulderR = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), matGold);
                 shoulderR.position.set(0.7, 0.5, 0);
 
@@ -266,7 +260,6 @@
                 activeMeshGroup.add(helmetBox);
                 activeMeshGroup.add(shoulderL);
                 activeMeshGroup.add(shoulderR);
-
             } else {
                 let geom, mat;
                 if (type === 'sphere') {
@@ -287,7 +280,6 @@
             }
         }
 
-        // Inicializar con cubo predeterminado
         updateVisorModel('box');
 
         function animateSlot3D() {
@@ -300,7 +292,7 @@
         }
         animateSlot3D();
 
-        // --- 3. LÓGICA DE INTERACCIÓN Y CÓDIGO CAD ---
+        // --- 3. LÓGICA DE INTERACCIÓN Y CÁMARA (ANÁLISIS DE OBJETOS / CUBO DE RUBIK) ---
         function triggerCamera() {
             document.getElementById('camera-input').click();
         }
@@ -308,11 +300,17 @@
         function handleImage(event) {
             const file = event.target.files[0];
             if (file) {
-                addChatMessage("Imagen capturada y enviada al núcleo. Analizando geometría...", "user");
-                speakJarvis("A la orden, señor. Analizando estructura visual.");
+                addChatMessage("Imagen capturada (Ej. Cubo de Rubik). Analizando estado del objeto...", "user");
+                speakJarvis("Analizando patrón visual y estructura del objeto, señor.");
+                
+                // Simula el análisis visual y búsqueda de solución en Google después de hablar
                 setTimeout(() => {
-                    addChatMessage("JARVIS: Geometría de hardware analizada con éxito.", "jarvis");
-                }, 1000);
+                    addChatMessage("JARVIS: Patrón detectado. Consultando algoritmos de resolución en red...", "jarvis");
+                    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent("como resolver cubo de rubik algoritmos pasos")}`;
+                    speakJarvis("Objeto analizado con éxito. Abriendo manual de resolución.", () => {
+                        window.location.href = searchUrl;
+                    });
+                }, 2000);
             }
         }
 
@@ -449,7 +447,7 @@
             try { recognition.start(); } catch(e) {}
         }
 
-        // --- 6. PROCESADOR INTELIGENTE CON PROTOCOLO DE ARMADURA Y MODELOS ---
+        // --- 6. PROCESADOR INTELIGENTE RIGUROSO (SEPARACIÓN CLARA DE INTENCIONES) ---
         async function processJarvisCommand(command) {
             const lower = command.toLowerCase();
             const isJarvisCalled = lower.includes("jarvis");
@@ -459,15 +457,25 @@
                 speechText += "A la orden, señor. ";
             }
 
-            // CASO A: PROTOCOLO DE TRAJE / ARMADURA
-            if (lower.includes("traje") || lower.includes("armadura") || lower.includes("mark")) {
+            // 1. SALUDOS (Prioridad alta para evitar que vayan a red)
+            if (lower === "hola" || lower === "jarvis hola" || lower.includes("saludos") || lower.includes("buenos días")) {
+                addChatMessage("JARVIS: Sistemas operativos funcionando de manera óptima, señor.", "jarvis");
+                speakJarvis(speechText + "Sistemas operativos en línea y funcionando de manera óptima, señor.");
+            }
+            // 2. AGRADECIMIENTOS (Prioridad alta)
+            else if (lower === "gracias" || lower === "jarvis gracias" || lower.includes("muchas gracias")) {
+                addChatMessage("JARVIS: A su servicio, señor.", "jarvis");
+                speakJarvis(speechText + "A su servicio, señor. Para eso estamos.");
+            }
+            // 3. PROTOCOLO DE ARMADURA / TRAJE
+            else if (lower.includes("traje") || lower.includes("armadura") || lower.includes("mark")) {
                 updateVisorModel('armor');
                 updateCadCode("// PROTOCOLO DE ARMADURA STARK\nAssembly.loadArmorMatrix();\nServos: Calibrados [OK]");
 
                 addChatMessage("JARVIS: Iniciando protocolo de despliegue de armadura en visor CAD.", "jarvis");
                 speakJarvis(speechText + "Iniciando protocolo de ensamblaje de armadura, señor.");
             }
-            // CASO B: DISEÑAR / CREAR / MODELAR OTRAS FIGURAS
+            // 4. DISEÑAR / CREAR / MODELAR FIGURAS GEOMÉTRICAS
             else if (lower.includes("diseña") || lower.includes("crea") || lower.includes("modelo")) {
                 let shapeType = 'box';
                 let shapeName = 'cubo';
@@ -493,18 +501,8 @@
                 addChatMessage(`JARVIS: Generando modelo de ${shapeName} en visor CAD.`, "jarvis");
                 speakJarvis(speechText + `Generando diseño de ${shapeName} en el visor.`);
             } 
-            // CASO C: SALUDOS
-            else if (lower.includes("hola") || lower.includes("saludos") || lower.includes("buenos días")) {
-                addChatMessage("JARVIS: Sistemas operativos funcionando de manera óptima, señor.", "jarvis");
-                speakJarvis(speechText + "Sistemas operativos en línea, señor.");
-            }
-            // CASO D: AGRADECIMIENTOS
-            else if (lower.includes("gracias") || lower.includes("muchas gracias")) {
-                addChatMessage("JARVIS: A su servicio, señor.", "jarvis");
-                speakJarvis(speechText + "A su servicio, señor. Para eso estamos.");
-            }
-            // CASO E: BÚSQUEDA / INVESTIGACIÓN
-            else if (lower.includes("investiga") || lower.includes("busca") || lower.includes("qué es") || lower.includes("como es")) {
+            // 5. BÚSQUEDA / INVESTIGACIÓN EN RED (Únicamente si lleva explícitamente palabras de búsqueda)
+            else if (lower.includes("investiga") || lower.includes("busca") || lower.includes("qué es") || lower.includes("cómo es") || lower.includes("como resolver")) {
                 let queryClean = command
                     .replace(/jarvis/gi, "")
                     .replace(/investiga profundamente sobre/gi, "")
@@ -529,9 +527,9 @@
                     window.location.href = searchUrl;
                 });
             }
-            // CASO F: OTROS
+            // 6. CUALQUIER OTRO COMANDO O TEXTO GENERAL
             else {
-                addChatMessage("JARVIS: Comando recibido, señor. Usa 'diseña traje' o 'investiga'.", "jarvis");
+                addChatMessage("JARVIS: Comando recibido, señor. Usa 'hola', 'gracias', 'diseña [cubo/esfera/traje]' o 'investiga'.", "jarvis");
                 speakJarvis(speechText + "Comando recibido, señor.");
             }
         }
