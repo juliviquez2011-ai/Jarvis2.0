@@ -289,8 +289,8 @@
             testMat.color.setHex(0x00ff66);
         }
 
-        // --- 4. SÍNTESIS DE VOZ (VOZ MASCULINA NATURAL) ---
-        function speakJarvis(text) {
+        // --- 4. SÍNTESIS DE VOZ SINCRONIZADA (EVITA CORTES AL REDIRIGIR) ---
+        function speakJarvis(text, onFinished = null) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const cleanText = text.replace(/["'«»]/g, '');
@@ -301,13 +301,19 @@
                 speech.pitch = 1.0; 
 
                 let voices = window.speechSynthesis.getVoices();
-                let selectedVoice = voices.find(v => v.lang.startsWith('es') && (v.name.includes('Voice 1') || v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo'))) || voices.find(v => v.lang.startsWith('es'));
+                let selectedVoice = voices.find(v => v.lang.startsWith('es') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo'))) || voices.find(v => v.lang.startsWith('es'));
 
                 if (selectedVoice) {
                     speech.voice = selectedVoice;
                 }
 
+                if (onFinished) {
+                    speech.onend = onFinished;
+                }
+
                 window.speechSynthesis.speak(speech);
+            } else if (onFinished) {
+                onFinished();
             }
         }
 
@@ -372,7 +378,7 @@
             try { recognition.start(); } catch(e) {}
         }
 
-        // --- 6. PROCESADOR INTELIGENTE CON REDIRECCIÓN AUTOMÁTICA A GOOGLE ---
+        // --- 6. PROCESADOR INTELIGENTE CON REDIRECCIÓN ESPERANDO A QUE TERMINE DE HABLAR ---
         async function processJarvisCommand(command) {
             const lower = command.toLowerCase();
             const isJarvisCalled = lower.includes("jarvis");
@@ -392,7 +398,7 @@
                 speakJarvis(speechText + "Sistemas operativos en línea, señor.");
             }
             else {
-                // LIMPIEZA INTELIGENTE: Elimina comandos para buscar únicamente el tema clave
+                // LIMPIEZA INTELIGENTE: Extrae únicamente el término clave
                 let queryClean = command
                     .replace(/jarvis/gi, "")
                     .replace(/investiga sobre/gi, "")
@@ -407,12 +413,12 @@
                 const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(queryClean)}`;
                 
                 addChatMessage(`JARVIS: Investigando en red: "${queryClean}".`, "jarvis");
-                speakJarvis(speechText + `Investigando sobre ${queryClean}. Redirigiendo.`);
                 
-                // Redirección automática inmediata a Google en la misma pestaña de Safari
-                setTimeout(() => {
+                // Habla la frase completa y abre Google justo cuando termine de hablar
+                const spokenMessage = speechText + `Investigando sobre ${queryClean}.`;
+                speakJarvis(spokenMessage, () => {
                     window.location.href = searchUrl;
-                }, 1000);
+                });
             }
         }
 
@@ -424,4 +430,5 @@
     </script>
 </body>
 </html>
+
 
