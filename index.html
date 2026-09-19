@@ -20,7 +20,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px;
-            pointer-events: none;
+            pointer-events: none; /* Permite hacer clic a través del contenedor general */
         }
 
         /* Canvas de fondo (Esfera Holográfica Saturno) */
@@ -33,6 +33,7 @@
             z-index: 1;
         }
 
+        /* Elementos interactivos habilitados */
         .interactive {
             pointer-events: auto;
             z-index: 10;
@@ -99,7 +100,7 @@
             bottom: 25px;
             width: 90%;
             max-width: 700px;
-            background: rgba(2, 8, 19, 0.9);
+            background: rgba(2, 8, 19, 0.95);
             border: 1px solid rgba(0, 240, 255, 0.4);
             border-radius: 30px;
             display: flex;
@@ -107,7 +108,8 @@
             padding: 8px 15px;
             backdrop-filter: blur(10px);
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
-            z-index: 20;
+            z-index: 9999; /* Prioridad máxima para clics y teclado */
+            pointer-events: auto;
         }
 
         #bottom-bar input {
@@ -118,6 +120,7 @@
             color: #fff;
             font-size: 15px;
             padding: 0 10px;
+            pointer-events: auto;
         }
 
         .hud-btn {
@@ -130,6 +133,7 @@
             margin-left: 8px;
             font-size: 13px;
             transition: 0.2s;
+            pointer-events: auto;
         }
         .hud-btn:hover, .hud-btn.active {
             background: #00f0ff;
@@ -149,7 +153,7 @@
         
         <!-- Mensajes del sistema -->
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis">JARVIS: Sistemas en línea, bro. Núcleo holográfico y escucha activa listos.</div>
+            <div class="msg jarvis">JARVIS: Sistemas en línea. Núcleo holográfico activo.</div>
         </div>
 
         <!-- Slot Superior Derecho: Visor CAD / Código 3D -->
@@ -158,8 +162,8 @@
             <div id="viewer-3d"></div>
         </div>
 
-        <!-- Barra Inferior de Control -->
-        <div id="bottom-bar" class="interactive">
+        <!-- Barra Inferior de Control (Forzada con z-index alto e interactiva) -->
+        <div id="bottom-bar">
             <button class="hud-btn" onclick="triggerCamera()" title="Capturar Cámara">📷 +</button>
             <input type="file" id="camera-input" accept="image/*" capture="environment" onchange="handleImage(event)">
             
@@ -243,9 +247,9 @@
             const file = event.target.files[0];
             if (file) {
                 addChatMessage("Imagen capturada y enviada al núcleo. Analizando geometría...", "user");
-                speakJarvis("Analizando estructura visual, bro. Procesando diseño.");
+                speakJarvis("A la orden, señor. Analizando estructura visual.");
                 setTimeout(() => {
-                    addChatMessage("JARVIS: Geometría de hardware analizada con éxito. Código base generado.", "jarvis");
+                    addChatMessage("JARVIS: Geometría de hardware analizada con éxito.", "jarvis");
                 }, 1000);
             }
         }
@@ -279,17 +283,28 @@
         function dropCode(ev) {
             ev.preventDefault();
             removeDropEffect(ev);
-            addChatMessage("JARVIS: Código recibido en el slot CAD. Compilando modelo 3D espacial...", "jarvis");
-            speakJarvis("Código compilado en el visor holográfico.");
+            addChatMessage("JARVIS: Código recibido en el slot CAD. Compilando modelo...", "jarvis");
+            speakJarvis("A la orden, señor. Compilando modelo en el visor.");
             testMat.color.setHex(0x00ff66);
         }
 
         function speakJarvis(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const speech = new SpeechSynthesisUtterance(text);
-                speech.lang = 'es-ES';
+                
+                const cleanText = text.replace(/["'«»]/g, '');
+                const speech = new SpeechSynthesisUtterance(cleanText);
+                
+                speech.lang = 'es-MX';
                 speech.rate = 1.0;
+                speech.pitch = 0.9;
+
+                const voices = window.speechSynthesis.getVoices();
+                const latinoVoice = voices.find(v => v.lang.includes('es') && (v.name.includes('Mexico') || v.name.includes('Latino') || v.name.includes('Pablo') || v.name.includes('Raul') || v.name.includes('Google')));
+                if (latinoVoice) {
+                    speech.voice = latinoVoice;
+                }
+
                 window.speechSynthesis.speak(speech);
             }
         }
@@ -315,7 +330,7 @@
                 isListeningActive = true;
                 btn.classList.add('active');
                 addChatMessage("JARVIS: Escucha continua activa. Di 'Jarvis' seguido de tu orden...", "jarvis");
-                speakJarvis("Sistemas de escucha activados, bro.");
+                speakJarvis("A la orden, señor. Sistemas de escucha activos.");
             }
         }
 
@@ -356,14 +371,14 @@
         function processJarvisCommand(command) {
             const lower = command.toLowerCase();
             if (lower.includes("diseña") || lower.includes("crea") || lower.includes("modelo")) {
-                addChatMessage("JARVIS: Consultando base de datos en línea y generando código CAD optimizado...", "jarvis");
-                speakJarvis("Generando diseño estructural, bro. Revisa el slot superior.");
+                addChatMessage("JARVIS: Generando código CAD optimizado...", "jarvis");
+                speakJarvis("A la orden, señor. Generando diseño estructural, revisa el visor.");
                 setTimeout(() => {
                     testMat.color.setHex(0xff0055);
                 }, 1200);
             } else {
-                addChatMessage("JARVIS: Orden procesada con éxito, bro.", "jarvis");
-                speakJarvis("Entendido, ejecutando tarea.");
+                addChatMessage("JARVIS: Tarea ejecutada con éxito, bro.", "jarvis");
+                speakJarvis("A la orden, señor. Ejecutando tarea.");
             }
         }
 
@@ -375,3 +390,4 @@
     </script>
 </body>
 </html>
+
