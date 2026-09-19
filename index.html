@@ -285,7 +285,7 @@
             testMat.color.setHex(0x00ff66);
         }
 
-        // --- 4. SÍNTESIS DE VOZ MASCULINA FORZADA ---
+        // --- 4. SÍNTESIS DE VOZ MASCULINA FORZADA (GRAVE Y LIMPIA) ---
         function speakJarvis(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -293,32 +293,39 @@
                 const speech = new SpeechSynthesisUtterance(cleanText);
                 
                 speech.lang = 'es-MX';
-                speech.rate = 1.0;
-                speech.pitch = 0.7; // Tono más grave/masculino
+                speech.rate = 0.95; 
+                speech.pitch = 0.4; // Tono grave forzado para simular voz masculina
 
-                const voices = window.speechSynthesis.getVoices();
-                // Filtro estricto para buscar una voz masculina o neutra en español
-                const maleVoice = voices.find(v => 
-                    v.lang.includes('es') && 
-                    (v.name.toLowerCase().includes('male') || 
-                     v.name.toLowerCase().includes('pablo') || 
-                     v.name.toLowerCase().includes('raul') || 
-                     v.name.toLowerCase().includes('carlos') || 
-                     v.name.toLowerCase().includes('alonso') ||
-                     v.name.toLowerCase().includes('microsoft sabina') == false && v.name.toLowerCase().includes('helena') == false)
-                ) || voices.find(v => v.lang.includes('es'));
+                let voices = window.speechSynthesis.getVoices();
+                let selectedVoice = voices.find(v => 
+                    v.lang.startsWith('es') && (
+                        v.name.toLowerCase().includes('male') || 
+                        v.name.toLowerCase().includes('pablo') || 
+                        v.name.toLowerCase().includes('raul') || 
+                        v.name.toLowerCase().includes('carlos') || 
+                        v.name.toLowerCase().includes('alonso') ||
+                        v.name.toLowerCase().includes('jorge') ||
+                        v.name.toLowerCase().includes('microsoft es-mx')
+                    )
+                );
 
-                if (maleVoice) {
-                    speech.voice = maleVoice;
+                if (!selectedVoice && voices.length > 0) {
+                    const spanishVoices = voices.filter(v => v.lang.startsWith('es'));
+                    selectedVoice = spanishVoices[spanishVoices.length - 1];
+                }
+
+                if (selectedVoice) {
+                    speech.voice = selectedVoice;
                 }
 
                 window.speechSynthesis.speak(speech);
             }
         }
 
-        // Cargar voces por si el navegador tarda en listarlas
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => {};
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
         }
 
         // --- 5. RECONOCIMIENTO DE VOZ Y WAKE WORD ---
@@ -379,8 +386,6 @@
         // --- 6. PROCESADOR INTELIGENTE SIN FRASES REPETITIVAS ---
         async function processJarvisCommand(command) {
             const lower = command.toLowerCase();
-            
-            // Verifica si incluye la palabra clave "Jarvis" para aplicar el protocolo "A la orden, señor"
             const isJarvisCalled = lower.includes("jarvis");
 
             let replyText = "";
@@ -390,7 +395,6 @@
                 speechText += "A la orden, señor. ";
             }
 
-            // Procesamiento inteligente según lo que pidas
             if (lower.includes("diseña") || lower.includes("crea") || lower.includes("modelo")) {
                 replyText = "JARVIS: Diseñando estructura CAD en el visor holográfico.";
                 speechText += "Generando diseño estructural en el visor.";
@@ -401,7 +405,6 @@
                 speechText += "Sistemas operativos en línea, señor.";
             }
             else {
-                // Consulta general / Búsqueda web real
                 const queryClean = command.replace(/jarvis/gi, "").trim();
                 replyText = `JARVIS: Consultando red global para: "${queryClean}"`;
                 speechText += `Buscando información en la red, señor.`;
@@ -423,6 +426,7 @@
     </script>
 </body>
 </html>
+
 
 
 
