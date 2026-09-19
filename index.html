@@ -1,1 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>J.A.R.V.I.S. OS - Stark Edition</title>
+    <!-- Three.js para la esfera holográfica y el visor CAD 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
+        body, html { width: 100%; height: 100%; background-color: #020813; color: #00f0ff; overflow: hidden; }
 
+        /* Contenedor principal HUD */
+        #hud-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            pointer-events: none;
+        }
+
+        /* Canvas de fondo (Esfera Holográfica Saturno) */
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .interactive {
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        /* Esquina Superior Derecha: Slot y Lector 3D */
+        #top-right-slot {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            height: 240px;
+            border: 2px dashed rgba(0, 240, 255, 0.5);
+            background: rgba(2, 8, 19, 0.85);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        #top-right-slot.drag-over {
+            border-color: #00ff66;
+            background: rgba(0, 255, 102, 0.15);
+        }
+        #viewer-3d {
+            width: 100%;
+            height: 180px;
+            background: #000;
+            border-radius: 8px;
+            position: relative;
+        }
+        .slot-title {
+            font-size: 11px;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            color: #00f0ff;
+        }
+
+        /* Panel de Chat Lateral */
+        #jarvis-chat {
+            position: absolute;
+            top: 100px;
+            left: 30px;
+            width: 350px;
+            max-height: 40vh;
+            overflow-y: auto;
+            background: rgba(2, 8, 19, 0.8);
+            border-left: 3px solid #00f0ff;
+            padding: 15px;
+            font-size: 13px;
+            border-radius: 0 8px 8px 0;
+            backdrop-filter: blur(5px);
+        }
+        .msg { margin-bottom: 10px; line-height: 1.4; }
+        .msg.jarvis { color: #00f0ff; }
+        .msg.user { color: #ffffff; text-align: right; }
+
+        /* Barra Inferior Interactiva */
+        #bottom-bar {
+            position: absolute;
+            bottom: 25px;
+            width: 90%;
+            max-width: 700px;
+            background: rgba(2, 8, 19, 0.9);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+            z-index: 20;
+        }
+
+        #bottom-bar input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 15px;
+            padding: 0 10px;
+        }
+
+        .hud-btn {
+            background: transparent;
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+        .hud-btn:hover, .hud-btn.active {
+            background: #00f0ff;
+            color: #020813;
+            box-shadow: 0 0 10px #00f0ff;
+        }
+
+        #camera-input { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas de la Esfera Holográfica (Saturno) -->
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="hud-container">
+        
+        <!-- Mensajes del sistema -->
+        <div id="jarvis-chat" class="interactive">
+            <div class="msg jarvis">JARVIS: Sistemas en línea, bro. Núcleo holográfico y escucha activa listos.</div>
+        </div>
+
+        <!-- Slot Superior Derecho: Visor CAD / Código 3D -->
+        <div id="top-right-slot" class="interactive" ondragover="allowDrop(event)" ondragleave="removeDropEffect(event)" ondrop="dropCode(event)">
+            <div class="slot-title">SLOT 3D & COMPILADOR CAD</div>
+            <div id="viewer-3d"></div>
+        </div>
+
+        <!-- Barra Inferior de Control -->
+        <div id="bottom-bar" class="interactive">
+            <button class="hud-btn" onclick="triggerCamera()" title="Capturar Cámara">📷 +</button>
+            <input type="file" id="camera-input" accept="image/*" capture="environment" onchange="handleImage(event)">
+            
+            <input type="text" id="user-input" placeholder="Comando para JARVIS o di 'Jarvis'..." onkeypress="checkEnter(event)">
+            
+            <button id="mic-btn" class="hud-btn" onclick="toggleVoiceLoop()" title="Activar Escucha Continua">🎙️ Escucha</button>
+            <button class="hud-btn" onclick="sendPrompt()">Enviar</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. MOTOR DE LA ESFERA HOLOGRÁFICA (TIPO SATURNO) ---
+        const canvas = document.getElementById('bg-canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        // Esfera Central
+        const sphereGeo = new THREE.SphereGeometry(1.8, 32, 32);
+        const sphereMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.3 });
+        const coreSphere = new THREE.Mesh(sphereGeo, sphereMat);
+        scene.add(coreSphere);
+
+        // Anillos exteriores tipo Saturno
+        const ringGeo1 = new THREE.RingGeometry(2.5, 3.2, 64);
+        const ringMat1 = new THREE.MeshBasicMaterial({ color: 0x00aaff, side: THREE.DoubleSide, transparent: true, opacity: 0.5, wireframe: true });
+        const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
+        ring1.rotation.x = Math.PI / 2;
+        scene.add(ring1);
+
+        const ringGeo2 = new THREE.RingGeometry(3.5, 3.8, 64);
+        const ringMat2 = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide, transparent: true, opacity: 0.3, wireframe: true });
+        const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
+        ring2.rotation.x = Math.PI / 2.2;
+        ring2.rotation.y = Math.PI / 6;
+        scene.add(ring2);
+
+        camera.position.z = 7;
+
+        function animateHolo() {
+            requestAnimationFrame(animateHolo);
+            coreSphere.rotation.y += 0.005;
+            ring1.rotation.z += 0.008;
+            ring2.rotation.z -= 0.006;
+            renderer.render(scene, camera);
+        }
+        animateHolo();
+
+        // --- 2. VISOR 3D SUPERIOR DERECHO (SLOT CAD) ---
+        const viewerContainer = document.getElementById('viewer-3d');
+        const scene3D = new THREE.Scene();
+        const camera3D = new THREE.PerspectiveCamera(75, viewerContainer.clientWidth / viewerContainer.clientHeight, 0.1, 1000);
+        const renderer3D = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer3D.setSize(viewerContainer.clientWidth, viewerContainer.clientHeight);
+        viewerContainer.appendChild(renderer3D.domElement);
+
+        const testGeo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
+        const testMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true });
+        const testMesh = new THREE.Mesh(testGeo, testMat);
+        scene3D.add(testMesh);
+        camera3D.position.z = 3;
+
+        function animateSlot3D() {
+            requestAnimationFrame(animateSlot3D);
+            testMesh.rotation.x += 0.01;
+            testMesh.rotation.y += 0.01;
+            renderer3D.render(scene3D, camera3D);
+        }
+        animateSlot3D();
+
+        // --- 3. LÓGICA DE INTERACCIÓN Y COMANDOS ---
+        function triggerCamera() {
+            document.getElementById('camera-input').click();
+        }
+
+        function handleImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                addChatMessage("Imagen capturada y enviada al núcleo. Analizando geometría...", "user");
+                speakJarvis("Analizando estructura visual, bro. Procesando diseño.");
+                setTimeout(() => {
+                    addChatMessage("JARVIS: Geometría de hardware analizada con éxito. Código base generado.", "jarvis");
+                }, 1000);
+            }
+        }
+
+        function sendPrompt() {
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            addChatMessage(text, "user");
+            input.value = "";
+
+            processJarvisCommand(text);
+        }
+
+        function checkEnter(e) {
+            if (e.key === 'Enter') sendPrompt();
+        }
+
+        function addChatMessage(text, sender) {
+            const chat = document.getElementById('jarvis-chat');
+            const div = document.createElement('div');
+            div.className = `msg ${sender}`;
+            div.innerText = text;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function allowDrop(ev) { ev.preventDefault(); document.getElementById('top-right-slot').classList.add('drag-over'); }
+        function removeDropEffect(ev) { document.getElementById('top-right-slot').classList.remove('drag-over'); }
+        function dropCode(ev) {
+            ev.preventDefault();
+            removeDropEffect(ev);
+            addChatMessage("JARVIS: Código recibido en el slot CAD. Compilando modelo 3D espacial...", "jarvis");
+            speakJarvis("Código compilado en el visor holográfico.");
+            testMat.color.setHex(0x00ff66);
+        }
+
+        function speakJarvis(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const speech = new SpeechSynthesisUtterance(text);
+                speech.lang = 'es-ES';
+                speech.rate = 1.0;
+                window.speechSynthesis.speak(speech);
+            }
+        }
+
+        // --- 4. RECONOCIMIENTO DE VOZ Y ESCUCHA CONTINUA (WAKE WORD) ---
+        let recognition = null;
+        let isListeningActive = false;
+
+        function toggleVoiceLoop() {
+            const btn = document.getElementById('mic-btn');
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert("Tu navegador no soporta reconocimiento de voz nativo, bro.");
+                return;
+            }
+
+            if (isListeningActive) {
+                if (recognition) recognition.stop();
+                isListeningActive = false;
+                btn.classList.remove('active');
+                addChatMessage("JARVIS: Escucha continua pausada.", "jarvis");
+            } else {
+                startContinuousListening();
+                isListeningActive = true;
+                btn.classList.add('active');
+                addChatMessage("JARVIS: Escucha continua activa. Di 'Jarvis' seguido de tu orden...", "jarvis");
+                speakJarvis("Sistemas de escucha activados, bro.");
+            }
+        }
+
+        function startContinuousListening() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.continuous = true;
+            recognition.interimResults = false;
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[event.results.length - 1][0].transcript.trim();
+                console.log("Audio capturado:", transcript);
+
+                if (transcript.toLowerCase().includes("jarvis")) {
+                    addChatMessage(transcript, "user");
+                    processJarvisCommand(transcript);
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.log("Error de reconocimiento de voz: ", event.error);
+            };
+
+            recognition.onend = function() {
+                if (isListeningActive) {
+                    try { recognition.start(); } catch(e) {}
+                }
+            };
+
+            try {
+                recognition.start();
+            } catch(e) {
+                console.log("Ya está corriendo la escucha.");
+            }
+        }
+
+        function processJarvisCommand(command) {
+            const lower = command.toLowerCase();
+            if (lower.includes("diseña") || lower.includes("crea") || lower.includes("modelo")) {
+                addChatMessage("JARVIS: Consultando base de datos en línea y generando código CAD optimizado...", "jarvis");
+                speakJarvis("Generando diseño estructural, bro. Revisa el slot superior.");
+                setTimeout(() => {
+                    testMat.color.setHex(0xff0055);
+                }, 1200);
+            } else {
+                addChatMessage("JARVIS: Orden procesada con éxito, bro.", "jarvis");
+                speakJarvis("Entendido, ejecutando tarea.");
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
