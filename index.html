@@ -20,7 +20,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px;
-            pointer-events: none; /* Permite hacer clic a través del contenedor general */
+            pointer-events: none;
         }
 
         /* Canvas de fondo (Esfera Holográfica Saturno) */
@@ -33,7 +33,6 @@
             z-index: 1;
         }
 
-        /* Elementos interactivos habilitados */
         .interactive {
             pointer-events: auto;
             z-index: 10;
@@ -80,17 +79,17 @@
             position: absolute;
             top: 100px;
             left: 30px;
-            width: 350px;
-            max-height: 40vh;
+            width: 380px;
+            max-height: 45vh;
             overflow-y: auto;
-            background: rgba(2, 8, 19, 0.8);
+            background: rgba(2, 8, 19, 0.85);
             border-left: 3px solid #00f0ff;
             padding: 15px;
             font-size: 13px;
             border-radius: 0 8px 8px 0;
             backdrop-filter: blur(5px);
         }
-        .msg { margin-bottom: 10px; line-height: 1.4; }
+        .msg { margin-bottom: 12px; line-height: 1.4; }
         .msg.jarvis { color: #00f0ff; }
         .msg.user { color: #ffffff; text-align: right; }
 
@@ -108,7 +107,7 @@
             padding: 8px 15px;
             backdrop-filter: blur(10px);
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
-            z-index: 9999; /* Prioridad máxima para clics y teclado */
+            z-index: 9999;
             pointer-events: auto;
         }
 
@@ -162,7 +161,7 @@
             <div id="viewer-3d"></div>
         </div>
 
-        <!-- Barra Inferior de Control (Forzada con z-index alto e interactiva) -->
+        <!-- Barra Inferior de Control -->
         <div id="bottom-bar">
             <button class="hud-btn" onclick="triggerCamera()" title="Capturar Cámara">📷 +</button>
             <input type="file" id="camera-input" accept="image/*" capture="environment" onchange="handleImage(event)">
@@ -176,7 +175,7 @@
     </div>
 
     <script>
-        // --- 1. MOTOR DE LA ESFERA HOLOGRÁFICA (TIPO SATURNO) ---
+        // --- 1. MOTOR DE LA ESFERA HOLOGRÁFICA ---
         const canvas = document.getElementById('bg-canvas');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -185,13 +184,11 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
 
-        // Esfera Central
         const sphereGeo = new THREE.SphereGeometry(1.8, 32, 32);
         const sphereMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.3 });
         const coreSphere = new THREE.Mesh(sphereGeo, sphereMat);
         scene.add(coreSphere);
 
-        // Anillos exteriores tipo Saturno
         const ringGeo1 = new THREE.RingGeometry(2.5, 3.2, 64);
         const ringMat1 = new THREE.MeshBasicMaterial({ color: 0x00aaff, side: THREE.DoubleSide, transparent: true, opacity: 0.5, wireframe: true });
         const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
@@ -216,7 +213,7 @@
         }
         animateHolo();
 
-        // --- 2. VISOR 3D SUPERIOR DERECHO (SLOT CAD) ---
+        // --- 2. VISOR 3D SUPERIOR DERECHO ---
         const viewerContainer = document.getElementById('viewer-3d');
         const scene3D = new THREE.Scene();
         const camera3D = new THREE.PerspectiveCamera(75, viewerContainer.clientWidth / viewerContainer.clientHeight, 0.1, 1000);
@@ -238,7 +235,7 @@
         }
         animateSlot3D();
 
-        // --- 3. LÓGICA DE INTERACCIÓN Y COMANDOS ---
+        // --- 3. LÓGICA DE INTERACCIÓN Y BÚSQUEDA WEB INTELIGENTE ---
         function triggerCamera() {
             document.getElementById('camera-input').click();
         }
@@ -291,10 +288,8 @@
         function speakJarvis(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                
                 const cleanText = text.replace(/["'«»]/g, '');
                 const speech = new SpeechSynthesisUtterance(cleanText);
-                
                 speech.lang = 'es-MX';
                 speech.rate = 1.0;
                 speech.pitch = 0.9;
@@ -304,19 +299,18 @@
                 if (latinoVoice) {
                     speech.voice = latinoVoice;
                 }
-
                 window.speechSynthesis.speak(speech);
             }
         }
 
-        // --- 4. RECONOCIMIENTO DE VOZ Y ESCUCHA CONTINUA (WAKE WORD) ---
+        // --- 4. RECONOCIMIENTO DE VOZ Y WAKE WORD ---
         let recognition = null;
         let isListeningActive = false;
 
         function toggleVoiceLoop() {
             const btn = document.getElementById('mic-btn');
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert("Tu navegador no soporta reconocimiento de voz nativo, bro.");
+                alert("Tu navegador no soporta reconocimiento de voz nativo.");
                 return;
             }
 
@@ -361,24 +355,42 @@
                 }
             };
 
-            try {
-                recognition.start();
-            } catch(e) {
-                console.log("Ya está corriendo la escucha.");
-            }
+            try { recognition.start(); } catch(e) {}
         }
 
-        function processJarvisCommand(command) {
+        // --- 5. PROCESADOR INTELIGENTE CON BÚSQUEDA WEB Y PROTOCOLO "SEÑOR" ---
+        async function processJarvisCommand(command) {
             const lower = command.toLowerCase();
+            
+            // Detecta si inicia con la orden de respeto
+            const isDirectCommand = lower.startsWith("jarvis") || lower.includes("jarvis");
+
+            if (isDirectCommand) {
+                speakJarvis("A la orden, señor.");
+            }
+
+            // Comandos internos de diseño CAD
             if (lower.includes("diseña") || lower.includes("crea") || lower.includes("modelo")) {
                 addChatMessage("JARVIS: Generando código CAD optimizado...", "jarvis");
-                speakJarvis("A la orden, señor. Generando diseño estructural, revisa el visor.");
+                speakJarvis("Generando diseño estructural en el visor.");
+                setTimeout(() => { testMat.color.setHex(0xff0055); }, 1200);
+            } 
+            else if (lower.includes("hola") || lower.includes("saludos")) {
+                addChatMessage("JARVIS: Saludos, señor. Sistemas principales operando al 100%.", "jarvis");
+                speakJarvis("Saludos, señor. Todo en orden.");
+            }
+            else {
+                // Si pregunta algo general, realiza búsqueda o abre la consulta en la red
+                addChatMessage("JARVIS: Buscando en la red global...", "jarvis");
+                speakJarvis("Buscando información en la red, señor.");
+                
+                // Abre una pestaña de búsqueda de Google con la consulta de forma automática para complementar la web app
                 setTimeout(() => {
-                    testMat.color.setHex(0xff0055);
-                }, 1200);
-            } else {
-                addChatMessage("JARVIS: Tarea ejecutada con éxito, bro.", "jarvis");
-                speakJarvis("A la orden, señor. Ejecutando tarea.");
+                    const queryClean = command.replace(/jarvis/gi, "").trim();
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(queryClean)}`, '_blank');
+                    addChatMessage("JARVIS: Resultados desplegados en nueva ventana de red.", "jarvis");
+                    speakJarvis("Resultados listos, señor.");
+                }, 1000);
             }
         }
 
@@ -390,4 +402,5 @@
     </script>
 </body>
 </html>
+
 
