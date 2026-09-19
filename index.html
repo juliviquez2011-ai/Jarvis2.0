@@ -319,7 +319,6 @@
                 speech.pitch = 1.0; 
 
                 let voices = window.speechSynthesis.getVoices();
-                // Safari detectará automáticamente la voz masculina que configuraste en tu iPad
                 let selectedVoice = voices.find(v => v.lang.startsWith('es') && (v.name.includes('Voice 1') || v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo'))) || voices.find(v => v.lang.startsWith('es'));
 
                 if (selectedVoice) {
@@ -391,7 +390,7 @@
             try { recognition.start(); } catch(e) {}
         }
 
-        // --- 6. PROCESADOR INTELIGENTE DE CONSULTAS ---
+        // --- 6. PROCESADOR INTELIGENTE CON BÚSQUEDA LIMPIA DE TEMA ---
         async function processJarvisCommand(command) {
             const lower = command.toLowerCase();
             const isJarvisCalled = lower.includes("jarvis");
@@ -411,15 +410,25 @@
                 speakJarvis(speechText + "Sistemas operativos en línea, señor.");
             }
             else {
-                const queryClean = command.replace(/jarvis/gi, "").trim();
+                // LIMPIEZA INTELIGENTE: Extrae únicamente el término central de búsqueda
+                let queryClean = command
+                    .replace(/jarvis/gi, "")
+                    .replace(/investiga sobre/gi, "")
+                    .replace(/investiga el/gi, "")
+                    .replace(/investiga/gi, "")
+                    .replace(/busca sobre/gi, "")
+                    .replace(/busca/gi, "")
+                    .replace(/el /gi, "")
+                    .replace(/la /gi, "")
+                    .trim();
+
                 const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(queryClean)}`;
                 
-                addChatMessage(`JARVIS: Análisis de red completado para "${queryClean}", señor.`, "jarvis");
-                speakJarvis(speechText + "Información procesada. Enlace de investigación generado en pantalla.");
+                addChatMessage(`JARVIS: Red dirigida a: "${queryClean}".`, "jarvis");
+                speakJarvis(speechText + `Buscando información sobre ${queryClean}.`);
                 
-                // Genera un botón interactivo seguro que Safari no bloquea
                 setTimeout(() => {
-                    const htmlResponse = `JARVIS: Resultados de red listos.<br><a href="${searchUrl}" target="_blank" class="search-link">🌐 Abrir investigación en Google</a>`;
+                    const htmlResponse = `JARVIS: Investigación completada.<br><a href="${searchUrl}" target="_blank" class="search-link">🌐 Consultar red: ${queryClean}</a>`;
                     addChatMessage(htmlResponse, "jarvis", true);
                 }, 500);
             }
@@ -433,3 +442,4 @@
     </script>
 </body>
 </html>
+
