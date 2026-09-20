@@ -67,7 +67,6 @@
             outline: none;
         }
 
-        /* Botón de configuración movido a la esquina inferior derecha */
         #settings-toggle-btn {
             position: absolute;
             bottom: 25px;
@@ -75,7 +74,6 @@
             z-index: 10000;
         }
 
-        /* Menú de Configuración Expandido */
         #settings-modal {
             position: absolute;
             bottom: 80px;
@@ -178,11 +176,10 @@
         .msg.jarvis { color: var(--theme-color); }
         .msg.user { color: #ffffff; text-align: right; }
 
-        /* Marca de agua J.A.R.V.I.S. verde agua, más grande y desplazada a la derecha */
         #bottom-watermark {
             position: absolute;
             bottom: 30px;
-            left: 58%;
+            left: 68%;
             transform: translateX(-50%);
             font-size: 18px;
             letter-spacing: 4px;
@@ -255,7 +252,6 @@
 
         <button id="settings-toggle-btn" class="hud-btn interactive" style="padding: 8px 12px; font-size: 13px;" onclick="toggleSettingsMenu()">⚙️ Config</button>
 
-        <!-- Menú de Configuración Extendido -->
         <div id="settings-modal" class="interactive">
             <h3>PANEL DE CONFIGURACIÓN J.A.R.V.I.S.</h3>
             
@@ -293,7 +289,6 @@
             <div id="cad-code-display">// Núcleo Neural Activo...\n> A la espera de sus instrucciones, señor.</div>
         </div>
 
-        <!-- Marca de agua J.A.R.V.I.S. verde agua, más grande y corrida a la derecha -->
         <div id="bottom-watermark">J.A.R.V.I.S.</div>
 
         <div id="bottom-bar">
@@ -578,7 +573,8 @@
             const lower = text.toLowerCase();
             let codeSnippet = '';
 
-            if (lower.includes("armadura") || lower.includes("traje") || lower.includes("mark")) {
+            // Detectar comandos Stark / Mark con mayor flexibilidad
+            if (lower.includes("armadura") || lower.includes("traje") || lower.includes("mark") || lower.includes("stark")) {
                 updateVisorModel('armor');
                 codeSnippet = '// PROTOCOLO STARK\nAssembly.loadArmorMatrix();\nStatus: [OK]';
             } else if (lower.includes("esfera") || lower.includes("circulo") || lower.includes("bola")) {
