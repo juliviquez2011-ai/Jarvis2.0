@@ -35,7 +35,6 @@
             z-index: 10;
         }
 
-        /* Configuración de API Key flotante discreta */
         #api-config-panel {
             position: absolute;
             top: 20px;
@@ -175,7 +174,6 @@
 
     <div id="hud-container">
         
-        <!-- Panel para ingresar la API Key gratuita de Groq -->
         <div id="api-config-panel" class="interactive">
             <span>Groq Key:</span>
             <input type="password" id="groq-key-input" placeholder="gsk_..." onchange="saveGroqKey()">
@@ -183,24 +181,23 @@
         </div>
 
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis">JARVIS: Núcleo Groq ultra-rápido sincronizado. Introduzca su llave de acceso o indíqueme sus órdenes, bro.</div>
+            <div class="msg jarvis">JARVIS: Núcleo Groq ultra-rápido sincronizado. A su entera disposición, señor.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
             <div class="slot-title">SLOT 3D & COMPILADOR CAD</div>
             <div id="viewer-3d"></div>
-            <div id="cad-code-display">// Núcleo Neural Activo...\n> Esperando instrucciones de diseño, bro.</div>
+            <div id="cad-code-display">// Núcleo Neural Activo...\n> Esperando instrucciones de diseño, señor.</div>
         </div>
 
         <div id="bottom-bar">
-            <input type="text" id="user-input" placeholder="Escribe tu orden a JARVIS aquí..." onkeypress="checkEnter(event)">
+            <input type="text" id="user-input" placeholder="Indique su orden a JARVIS, señor..." onkeypress="checkEnter(event)">
             <button class="hud-btn" onclick="sendPrompt()">Enviar</button>
         </div>
 
     </div>
 
     <script>
-        // --- 1. MOTOR DE LA ESFERA HOLOGRÁFICA ---
         const canvas = document.getElementById('bg-canvas');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -238,7 +235,6 @@
         }
         animateHolo();
 
-        // --- 2. VISOR 3D SUPERIOR DERECHO ---
         const viewerContainer = document.getElementById('viewer-3d');
         const scene3D = new THREE.Scene();
         const camera3D = new THREE.PerspectiveCamera(60, viewerContainer.clientWidth / viewerContainer.clientHeight, 0.1, 1000);
@@ -324,20 +320,19 @@
         }
         animateSlot3D();
 
-        // --- 3. CONEXIÓN REAL CON LA API DE GROQ (IA REAL SIN LÍMITES PESADOS) ---
+        // AQUí SE CONFIGURA ESTRICTAMENTE EL TRATO DE "SEÑOR"
         let chatHistory = [
-            { role: "system", content: "Eres J.A.R.V.I.S., un mayordomo virtual de inteligencia artificial sumamente avanzado y leal. Te diriges al usuario estrictamente como 'bro'. Hablas de forma natural, fluida, inteligente, sarcástica cuando toca, y con absoluta cercanía." }
+            { role: "system", content: "Eres J.A.R.V.I.S., el mayordomo virtual y asistente de inteligencia artificial de Tony Stark. Te diriges al usuario estrictamente y sin excepciones como 'señor'. Eres educado, sumamente inteligente, leal, sofisticado y con un toque de sarcasmo fino británico. Respondes con naturalidad y fluidez." }
         ];
 
         function saveGroqKey() {
             const key = document.getElementById('groq-key-input').value.trim();
             if (key) {
                 localStorage.setItem('groq_api_key', key);
-                addChatMessage("JARVIS: Llave de Groq guardada correctamente en memoria local, bro.", "jarvis");
+                addChatMessage("JARVIS: Llave de Groq guardada correctamente en memoria, señor.", "jarvis");
             }
         }
 
-        // Cargar llave previa si existe
         window.addEventListener('DOMContentLoaded', () => {
             const savedKey = localStorage.getItem('groq_api_key');
             if (savedKey) {
@@ -349,7 +344,7 @@
             const apiKey = localStorage.getItem('groq_api_key') || document.getElementById('groq-key-input').value.trim();
             
             if (!apiKey) {
-                return "Por favor ingresa tu API Key gratuita de Groq arriba a la izquierda para activar mi verdadero cerebro, bro.";
+                return "Por favor, ingrese su API Key gratuita de Groq en el panel superior izquierdo para activar mis funciones cognitivas completas, señor.";
             }
 
             chatHistory.push({ role: "user", content: userText });
@@ -377,10 +372,10 @@
                 } else if (data.error) {
                     return `Error de Groq: ${data.error.message}`;
                 } else {
-                    return "Recepción de datos fallida con el clúster de Groq, bro.";
+                    return "Recepción de datos fallida con el clúster de Groq, señor.";
                 }
             } catch (err) {
-                return "Error de red al conectar con los servidores de Groq, bro.";
+                return "Error de red al conectar con los servidores de Groq, señor.";
             }
         }
 
@@ -392,7 +387,6 @@
             addChatMessage(text, "user");
             input.value = "";
 
-            // Comandos CAD locales simultáneos
             const lower = text.toLowerCase();
             let codeSnippet = '';
 
@@ -435,7 +429,6 @@
                 document.getElementById('cad-code-display').innerText = codeSnippet;
             }
 
-            // Llamada a la IA real de Groq
             const aiResponse = await queryGroqAI(text);
             addChatMessage("JARVIS: " + aiResponse, "jarvis");
             speakJarvis(aiResponse);
