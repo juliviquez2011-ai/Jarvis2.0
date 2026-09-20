@@ -61,18 +61,19 @@
             outline: none;
         }
 
+        /* Botón de configuración movido a la esquina inferior derecha */
         #settings-toggle-btn {
             position: absolute;
-            top: 20px;
-            left: 280px;
-            z-index: 100;
+            bottom: 25px;
+            right: 25px;
+            z-index: 10000;
         }
 
-        /* Menú de Configuración de Trato y Voz */
+        /* Menú de Configuración Expandido (esquina inferior derecha) */
         #settings-modal {
             position: absolute;
-            top: 80px;
-            left: 30px;
+            bottom: 80px;
+            right: 25px;
             width: 320px;
             background: rgba(2, 8, 19, 0.95);
             border: 1px solid #00f0ff;
@@ -80,10 +81,10 @@
             padding: 15px;
             backdrop-filter: blur(12px);
             box-shadow: 0 0 25px rgba(0, 240, 255, 0.3);
-            z-index: 200;
+            z-index: 20000;
             display: none;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
         #settings-modal h3 {
             font-size: 13px;
@@ -95,7 +96,7 @@
         .setting-group {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
             font-size: 11px;
         }
         .setting-group label {
@@ -174,8 +175,9 @@
         #bottom-bar {
             position: absolute;
             bottom: 25px;
-            width: 90%;
-            max-width: 700px;
+            width: calc(90% - 70px);
+            max-width: 620px;
+            left: 30px;
             background: rgba(2, 8, 19, 0.95);
             border: 1px solid rgba(0, 240, 255, 0.4);
             border-radius: 30px;
@@ -230,9 +232,9 @@
             <button class="hud-btn" style="padding: 2px 8px; font-size: 10px;" onclick="saveGroqKey()">Guardar</button>
         </div>
 
-        <button id="settings-toggle-btn" class="hud-btn interactive" style="padding: 5px 10px; font-size: 11px;" onclick="toggleSettingsMenu()">⚙️ Config</button>
+        <button id="settings-toggle-btn" class="hud-btn interactive" style="padding: 8px 12px; font-size: 13px;" onclick="toggleSettingsMenu()">⚙️ Config</button>
 
-        <!-- Menú de Configuración Personalizada -->
+        <!-- Menú de Configuración Extendido -->
         <div id="settings-modal" class="interactive">
             <h3>PANEL DE CONFIGURACIÓN J.A.R.V.I.S.</h3>
             
@@ -245,13 +247,27 @@
             </div>
 
             <div class="setting-group">
-                <label>Voz del Sistema (TTS):</label>
+                <label>Voz del Sistema (Español):</label>
                 <select id="voice-select" onchange="updateSelectedVoice(this.value)">
                     <option value="">Cargando voces...</option>
                 </select>
             </div>
 
-            <button class="hud-btn" style="margin-left: 0; margin-top: 5px; text-align: center;" onclick="toggleSettingsMenu()">Cerrar Panel</button>
+            <div class="setting-group">
+                <label>Velocidad de Voz:</label>
+                <select id="voice-rate-select" onchange="updateVoiceRate(this.value)">
+                    <option value="0.9">Normal (0.9x)</option>
+                    <option value="1.0">Rápida (1.0x)</option>
+                    <option value="0.8">Lenta (0.8x)</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 6px; margin-top: 5px;">
+                <button class="hud-btn" style="flex: 1; margin: 0; font-size: 10px; padding: 5px;" onclick="clearChatHistory()">Limpiar Chat</button>
+                <button class="hud-btn" style="flex: 1; margin: 0; font-size: 10px; padding: 5px; border-color: #00ff88; color: #00ff88;" onclick="restartSystem()">🔄 Reiniciar</button>
+            </div>
+
+            <button class="hud-btn" style="margin-left: 0; margin-top: 2px; text-align: center; font-size: 11px;" onclick="toggleSettingsMenu()">Cerrar Panel</button>
         </div>
 
         <div id="jarvis-chat" class="interactive">
@@ -402,6 +418,7 @@
 
         let currentMode = 'bro';
         let selectedVoiceIndex = 0;
+        let voiceRateVal = 0.9;
         let voicesList = [];
 
         function getSystemPrompt() {
@@ -433,20 +450,45 @@
 
         function loadVoices() {
             if (!('speechSynthesis' in window)) return;
-            voicesList = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
+            // Filtramos voces en español
+            voicesList = window.speechSynthesis.getVoices().filter(v => v.lang.toLowerCase().includes('es'));
             const select = document.getElementById('voice-select');
             select.innerHTML = '';
             
+            if (voicesList.length === 0) {
+                let opt = document.createElement('option');
+                opt.text = "No hay voces en español detectadas";
+                select.appendChild(opt);
+                return;
+            }
+
             voicesList.forEach((voice, index) => {
                 let opt = document.createElement('option');
                 opt.value = index;
-                opt.text = `${voice.name} (${voice.lang})`;
+                // Intentamos identificar si el nombre sugiere voz masculina o de otro tipo para guiarte
+                let tag = voice.name.toLowerCase();
+                let genderHint = (tag.includes('pablo') || tag.includes('raul') || tag.includes('alvaro') || tag.includes('jorge') || tag.includes('male') || tag.includes('david') || tag.includes('carlos')) ? ' [Hombre]' : '';
+                opt.text = `${voice.name} (${voice.lang})${genderHint}`;
                 select.appendChild(opt);
             });
         }
 
         function updateSelectedVoice(index) {
             selectedVoiceIndex = parseInt(index);
+        }
+
+        function updateVoiceRate(val) {
+            voiceRateVal = parseFloat(val);
+        }
+
+        function clearChatHistory() {
+            const chat = document.getElementById('jarvis-chat');
+            chat.innerHTML = `<div class="msg jarvis" id="welcome-msg">JARVIS: Memoria de chat depurada, bro.</div>`;
+            chatHistory = [{ role: "system", content: getSystemPrompt() }];
+        }
+
+        function restartSystem() {
+            location.reload();
         }
 
         if ('speechSynthesis' in window) {
@@ -574,7 +616,7 @@
                 const speech = new SpeechSynthesisUtterance(cleanText);
                 
                 speech.lang = 'es-ES';
-                speech.rate = 0.95;
+                speech.rate = voiceRateVal;
                 speech.pitch = (currentMode === 'bro') ? 0.9 : 0.7;
 
                 if (voicesList.length > 0 && voicesList[selectedVoiceIndex]) {
