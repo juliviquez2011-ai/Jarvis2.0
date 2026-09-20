@@ -307,7 +307,7 @@
 
         <div id="bottom-bar">
             <input type="text" id="user-input" placeholder="Indique su orden a JARVIS, señor..." onkeypress="checkEnter(event)">
-            <button id="mic-btn" class="hud-btn" onclick="toggleSpeechRecognition()" title="Activar escucha continua con 'Jarvis'">🎙️</button>
+            <button id="mic-btn" class="hud-btn" onclick="toggleSpeechRecognition()" title="Activar escucha de voz">🎙️</button>
             <button class="hud-btn" onclick="sendPrompt()">Enviar</button>
         </div>
 
@@ -546,7 +546,7 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
             recognition.lang = 'es-ES';
-            recognition.continuous = true; // Permanece escuchando de fondo
+            recognition.continuous = true;
             recognition.interimResults = false;
 
             recognition.onstart = () => {
@@ -559,7 +559,6 @@
                 const speechToText = event.results[event.results.length - 1][0].transcript.trim();
                 const lowerText = speechToText.toLowerCase();
                 
-                // Si menciona la palabra clave "jarvis", extraemos la orden
                 if (lowerText.includes("jarvis")) {
                     let cleanOrder = speechToText.replace(/jarvis/gi, "").trim();
                     if (cleanOrder.length > 0) {
@@ -576,7 +575,6 @@
             };
 
             recognition.onend = () => {
-                // Reiniciar automáticamente si el usuario dejó activa la escucha continua
                 if (shouldKeepListening) {
                     try { recognition.start(); } catch(e) {}
                 } else {
@@ -664,6 +662,7 @@
             const lower = text.toLowerCase();
             let codeSnippet = '';
 
+            // Detectar comandos Stark / Mark con mayor flexibilidad
             if (lower.includes("armadura") || lower.includes("traje") || lower.includes("mark") || lower.includes("stark")) {
                 updateVisorModel('armor');
                 codeSnippet = '// PROTOCOLO STARK\nAssembly.loadArmorMatrix();\nStatus: [OK]';
