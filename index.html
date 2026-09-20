@@ -181,17 +181,17 @@
         </div>
 
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis">JARVIS: Sistemas visuales y cognitivos en línea. A su entera disposición, señor.</div>
+            <div class="msg jarvis">JARVIS: Sistemas visuales y cognitivos en línea. A su entera disposición, bro.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
             <div class="slot-title">SLOT 3D & COMPILADOR CAD</div>
             <div id="viewer-3d"></div>
-            <div id="cad-code-display">// Núcleo Neural Activo...\n> Esperando instrucciones de diseño, señor.</div>
+            <div id="cad-code-display">// Núcleo Neural Activo...\n> Esperando instrucciones de diseño, bro.</div>
         </div>
 
         <div id="bottom-bar">
-            <input type="text" id="user-input" placeholder="Indique su orden a JARVIS, señor..." onkeypress="checkEnter(event)">
+            <input type="text" id="user-input" placeholder="Indique su orden a JARVIS, bro..." onkeypress="checkEnter(event)">
             <button class="hud-btn" onclick="sendPrompt()">Enviar</button>
         </div>
 
@@ -309,14 +309,14 @@
         animateSlot3D();
 
         let chatHistory = [
-            { role: "system", content: "Eres J.A.R.V.I.S., el mayordomo virtual y asistente de inteligencia artificial de Tony Stark. Te diriges al usuario estrictamente y sin excepciones como 'señor'. Eres educado, sumamente inteligente, leal, sofisticado y con un toque de sarcasmo fino británico. Respondes con naturalidad y fluidez." }
+            { role: "system", content: "Eres J.A.R.V.I.S., el mayordomo virtual y asistente de inteligencia artificial. Te diriges al usuario estrictamente y sin excepciones como 'bro'. Eres educado, sumamente inteligente, leal, sofisticado y con un toque de sarcasmo fino. Respondes con naturalidad y fluidez en español." }
         ];
 
         function saveGroqKey() {
             const key = document.getElementById('groq-key-input').value.trim();
             if (key) {
                 localStorage.setItem('groq_api_key', key);
-                addChatMessage("JARVIS: Llave de Groq guardada correctamente en memoria, señor.", "jarvis");
+                addChatMessage("JARVIS: Llave de Groq guardada correctamente en memoria, bro.", "jarvis");
             }
         }
 
@@ -331,7 +331,7 @@
             const apiKey = localStorage.getItem('groq_api_key') || document.getElementById('groq-key-input').value.trim();
             
             if (!apiKey) {
-                return "Por favor, ingrese su API Key gratuita de Groq en el panel superior izquierdo para activar mis funciones cognitivas completas, señor.";
+                return "Por favor, ingresa tu API Key gratuita de Groq en el panel superior izquierdo para activar mis funciones cognitivas completas, bro.";
             }
 
             chatHistory.push({ role: "user", content: userText });
@@ -344,7 +344,7 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        model: "llama-3.3-70b-versatile",
+                        model: "llama-3.1-8b-instant",
                         messages: chatHistory,
                         max_tokens: 300,
                         temperature: 0.7
@@ -359,10 +359,10 @@
                 } else if (data.error) {
                     return `Error de Groq: ${data.error.message}`;
                 } else {
-                    return "Recepción de datos fallida con el clúster de Groq, señor.";
+                    return "Recepción de datos fallida con el clúster de Groq, bro.";
                 }
             } catch (err) {
-                return "Error de red al conectar con los servidores de Groq, señor.";
+                return "Error de red al conectar con los servidores de Groq, bro.";
             }
         }
 
@@ -430,11 +430,10 @@
                 
                 speech.lang = 'es-ES';
                 speech.rate = 1.0;
-                speech.pitch = 0.7; // Tono más grave para simular voz masculina
+                speech.pitch = 0.7; // Tono grave para voz masculina
 
                 let voices = window.speechSynthesis.getVoices();
-                // Búsqueda estricta de voz masculina o natural en español
-                let selectedVoice = voices.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('microsoft raul') || v.name.toLowerCase().includes('gallego'))) 
+                let selectedVoice = voices.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('microsoft raul'))) 
                                  || voices.find(v => v.lang.startsWith('es') && !v.name.toLowerCase().includes('female') && !v.name.toLowerCase().includes('helena') && !v.name.toLowerCase().includes('laura'))
                                  || voices.find(v => v.lang.startsWith('es'));
 
@@ -455,6 +454,7 @@
     </script>
 </body>
 </html>
+
 
 
 
