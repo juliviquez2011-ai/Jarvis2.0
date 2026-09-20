@@ -181,17 +181,17 @@
         </div>
 
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis">JARVIS: Núcleo actualizado a GPT-OSS 20B. A su entera disposición, señor.</div>
+            <div class="msg jarvis">JARVIS: Núcleo actualizado a GPT-OSS 20B. Interfaz holográfica avanzada activa, bro.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
             <div class="slot-title">SLOT 3D & COMPILADOR CAD</div>
             <div id="viewer-3d"></div>
-            <div id="cad-code-display">// Núcleo Neural Activo...\n> A la espera de sus instrucciones, señor.</div>
+            <div id="cad-code-display">// Núcleo Neural Activo...\n> A la espera de sus instrucciones, bro.</div>
         </div>
 
         <div id="bottom-bar">
-            <input type="text" id="user-input" placeholder="Indique su orden a JARVIS, señor..." onkeypress="checkEnter(event)">
+            <input type="text" id="user-input" placeholder="Indique su orden a JARVIS, bro..." onkeypress="checkEnter(event)">
             <button class="hud-btn" onclick="sendPrompt()">Enviar</button>
         </div>
 
@@ -206,35 +206,60 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
 
+        // Geometría principal del núcleo central
         const sphereGeo = new THREE.SphereGeometry(1.8, 32, 32);
         const sphereMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.3 });
         const coreSphere = new THREE.Mesh(sphereGeo, sphereMat);
         scene.add(coreSphere);
 
-        const ringGeo1 = new THREE.RingGeometry(2.5, 3.2, 64);
-        const ringMat1 = new THREE.MeshBasicMaterial({ color: 0x00aaff, side: THREE.DoubleSide, transparent: true, opacity: 0.5, wireframe: true });
+        // Múltiples anillos holográficos avanzados con rotación y diseño orbital
+        const ringGeo1 = new THREE.RingGeometry(2.3, 2.7, 64);
+        const ringMat1 = new THREE.MeshBasicMaterial({ color: 0x00aaff, side: THREE.DoubleSide, transparent: true, opacity: 0.6, wireframe: true });
         const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
         ring1.rotation.x = Math.PI / 2;
         scene.add(ring1);
 
-        const ringGeo2 = new THREE.RingGeometry(3.5, 3.8, 64);
-        const ringMat2 = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide, transparent: true, opacity: 0.3, wireframe: true });
+        const ringGeo2 = new THREE.RingGeometry(3.0, 3.4, 64);
+        const ringMat2 = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide, transparent: true, opacity: 0.4, wireframe: true });
         const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
         ring2.rotation.x = Math.PI / 2.2;
         ring2.rotation.y = Math.PI / 6;
         scene.add(ring2);
 
+        const ringGeo3 = new THREE.RingGeometry(3.8, 4.1, 64);
+        const ringMat3 = new THREE.MeshBasicMaterial({ color: 0x00ff88, side: THREE.DoubleSide, transparent: true, opacity: 0.3, wireframe: true });
+        const ring3 = new THREE.Mesh(ringGeo3, ringMat3);
+        ring3.rotation.x = Math.PI / 1.5;
+        ring3.rotation.z = Math.PI / 4;
+        scene.add(ring3);
+
         camera.position.z = 7;
 
+        // Bucle de animación del fondo holográfico con cambio de color continuo (efecto RGB dinámico)
+        let clock = new THREE.Clock();
         function animateHolo() {
             requestAnimationFrame(animateHolo);
+            let elapsedTime = clock.getElapsedTime();
+
             coreSphere.rotation.y += 0.005;
             ring1.rotation.z += 0.008;
             ring2.rotation.z -= 0.006;
+            ring3.rotation.x += 0.005;
+            ring3.rotation.y -= 0.007;
+
+            // Cambio de color dinámico fluido basado en el tiempo (Hue Shift)
+            let dynamicHue = (elapsedTime * 0.05) % 1;
+            let dynamicColor = new THREE.Color().setHSL(dynamicHue, 1.0, 0.5);
+            
+            ringMat1.color = dynamicColor;
+            ringMat2.color = new THREE.Color().setHSL((dynamicHue + 0.3) % 1, 1.0, 0.5);
+            ringMat3.color = new THREE.Color().setHSL((dynamicHue + 0.6) % 1, 1.0, 0.5);
+
             renderer.render(scene, camera);
         }
         animateHolo();
 
+        // Visor 3D superior derecho (CAD Model Preview)
         const viewerContainer = document.getElementById('viewer-3d');
         const scene3D = new THREE.Scene();
         const camera3D = new THREE.PerspectiveCamera(60, viewerContainer.clientWidth / viewerContainer.clientHeight, 0.1, 1000);
@@ -309,14 +334,14 @@
         animateSlot3D();
 
         let chatHistory = [
-            { role: "system", content: "Eres J.A.R.V.I.S., el mayordomo virtual y asistente de inteligencia artificial de Tony Stark. Te diriges al usuario estrictamente, en cada respuesta y sin excepciones, como 'señor'. Eres educado, sumamente inteligente, leal, sofisticado, impecable en los modales y con un sutil toque de sarcasmo fino británico. Respondes con total naturalidad y fluidez en español." }
+            { role: "system", content: "Eres J.A.R.V.I.S., el mayordomo virtual y asistente de inteligencia artificial. Te diriges al usuario estrictamente como 'bro'. Eres educado, sumamente inteligente, leal, sofisticado y con un toque moderno." }
         ];
 
         function saveGroqKey() {
             const key = document.getElementById('groq-key-input').value.trim();
             if (key) {
                 localStorage.setItem('groq_api_key', key);
-                addChatMessage("JARVIS: Llave de Groq guardada correctamente en memoria, señor.", "jarvis");
+                addChatMessage("JARVIS: Llave de Groq guardada correctamente en memoria, bro.", "jarvis");
             }
         }
 
@@ -331,7 +356,7 @@
             const apiKey = localStorage.getItem('groq_api_key') || document.getElementById('groq-key-input').value.trim();
             
             if (!apiKey) {
-                return "Por favor, introduzca su API Key gratuita de Groq en el panel superior izquierdo para activar mis funciones cognitivas completas, señor.";
+                return "Por favor, introduzca su API Key gratuita de Groq en el panel superior izquierdo para activar mis funciones cognitivas completas, bro.";
             }
 
             chatHistory.push({ role: "user", content: userText });
@@ -359,10 +384,10 @@
                 } else if (data.error) {
                     return `Error de Groq: ${data.error.message}`;
                 } else {
-                    return "Recepción de datos fallida con el clúster de Groq, señor.";
+                    return "Recepción de datos fallida con el clúster de Groq, bro.";
                 }
             } catch (err) {
-                return "Error de red al conectar con los servidores de Groq, señor.";
+                return "Error de red al conectar con los servidores de Groq, bro.";
             }
         }
 
@@ -430,7 +455,7 @@
                 
                 speech.lang = 'es-ES';
                 speech.rate = 0.95;
-                speech.pitch = 0.7; // Tono grave para voz masculina
+                speech.pitch = 0.7;
 
                 let voices = window.speechSynthesis.getVoices();
                 let selectedVoice = voices.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('microsoft raul'))) 
