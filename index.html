@@ -383,7 +383,7 @@
 
         let clock = new THREE.Clock();
         let isStarkMode = false;
-        let selectedAIProvider = "auto"; // auto, gemini, groq
+        let selectedAIProvider = "auto";
 
         function animateHolo() {
             requestAnimationFrame(animateHolo);
@@ -436,7 +436,6 @@
             }
         }
 
-        // Generador avanzado de modelos resumidos en el visor CAD
         function updateVisorModel(type) {
             while(activeMeshGroup.children.length > 0){ 
                 const obj = activeMeshGroup.children[0];
@@ -457,7 +456,6 @@
                 activeMeshGroup.add(helmetBox);
             } else if (type === 'robot_arm' || type === 'search_mesh') {
                 setStarkTheme(false);
-                // Modelo resumido en malla para brazo robótico u objeto buscado
                 const matCyan = new THREE.MeshBasicMaterial({ color: 0x00ffaa, wireframe: true });
                 const baseCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.8, 0.3, 16), matCyan);
                 baseCyl.position.set(0, -0.8, 0);
@@ -642,23 +640,19 @@
             }
         }
 
-        // Sistema de IA con selección manual o automática
         async function queryAI(userText) {
             const geminiKey = localStorage.getItem('gemini_api_key') || document.getElementById('gemini-key-input').value.trim();
             const groqKey = localStorage.getItem('groq_api_key') || document.getElementById('groq-key-input').value.trim();
 
             chatHistory.push({ role: "user", content: userText });
 
-            // 1. Forzar solo Gemini
             if (selectedAIProvider === 'gemini' && geminiKey) {
                 return await callGemini(geminiKey);
             }
-            // 2. Forzar solo Groq
             if (selectedAIProvider === 'groq' && groqKey) {
                 return await callGroq(groqKey);
             }
 
-            // 3. Modo Automático (Gemini con respaldo en Groq)
             if (selectedAIProvider === 'auto') {
                 if (geminiKey) {
                     let res = await callGemini(geminiKey);
@@ -739,22 +733,23 @@
             const lower = text.toLowerCase();
             let codeSnippet = '';
 
-            // Detección de Búsqueda CAD y renderizado de modelo resumido
+            // Limpieza y extracción precisa del término a buscar en repositorios CAD
             if (lower.includes("busca") || lower.includes("modelo") || lower.includes("stl") || lower.includes("imprimir") || lower.includes("brazo")) {
-                let searchTerm = encodeURIComponent(text.replace(/jarvis|busca|el modelo|de|para|imprimir/gi, "").trim());
-                let dimText = "20 x 20 x 20 cm [Optimizada Resistencia]";
-                if (lower.includes("20x20")) dimText = "20 x 20 x 20 cm [Estructura 3D Conectada]";
+                let cleanQuery = text.replace(/jarvis|busca|el modelo|un modelo|stl|de|para|imprimir|en|printables|thingiverse/gi, "").trim();
+                if (!cleanQuery) cleanQuery = "modelo 3d";
+                let encodedSearch = encodeURIComponent(cleanQuery);
+                let dimText = "Dimensiones optimizadas [Malla CAD Activa]";
 
                 updateVisorModel('search_mesh');
-                codeSnippet = `// COMPILADOR CAD - MODELO RESUMIDO\nQuery: "${decodeURIComponent(searchTerm)}"\nDimensiones: ${dimText}\nEstado: Malla 3D Generada`;
+                codeSnippet = `// COMPILADOR CAD - MODELO RESUMIDO\nQuery: "${cleanQuery}"\nEstado: Malla 3D Generada\nStatus: [OK]`;
                 
-                let searchHtml = `JARVIS: Modelo localizado y renderizado en el visor CAD con sus dimensiones, señor.<br>
-                <a class="model-link-btn" href="https://www.printables.com/search/models?q=${searchTerm}" target="_blank">🔍 Buscar en Printables</a>
-                <a class="model-link-btn" href="https://www.thingiverse.com/search?q=${searchTerm}" target="_blank">🔍 Buscar en Thingiverse</a>`;
+                let searchHtml = `JARVIS: Búsqueda de "${cleanQuery}" procesada y enlaces de descarga generados, señor.<br>
+                <a class="model-link-btn" href="https://www.printables.com/search/models?q=${encodedSearch}" target="_blank">🔍 Buscar en Printables (${cleanQuery})</a>
+                <a class="model-link-btn" href="https://www.thingiverse.com/search?q=${encodedSearch}" target="_blank">🔍 Buscar en Thingiverse (${cleanQuery})</a>`;
                 
                 document.getElementById('cad-code-display').innerText = codeSnippet;
                 addChatMessage(searchHtml, "jarvis", true);
-                speakJarvis("He generado el modelo resumido en el compilador CAD y localizado los enlaces en la red, señor.");
+                speakJarvis(`He procesado el modelo ${cleanQuery} en el compilador CAD y localizado los enlaces, señor.`);
                 return;
             }
 
@@ -802,7 +797,7 @@
                     speech.voice = voicesList[selectedVoiceIndex];
                 }
 
-                window.speechSynthesis.spend = window.speechSynthesis.speak(speech);
+                window.speechSynthesis.speak(speech);
             }
         }
 
