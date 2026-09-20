@@ -181,7 +181,7 @@
         </div>
 
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis">JARVIS: Enlace actualizado al protocolo Instant. A su entera disposición, señor.</div>
+            <div class="msg jarvis">JARVIS: Núcleo actualizado a GPT-OSS 20B. A su entera disposición, señor.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
@@ -344,7 +344,7 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        model: "llama-3.1-8b-instant",
+                        model: "openai/gpt-oss-20b",
                         messages: chatHistory,
                         max_tokens: 300,
                         temperature: 0.7
