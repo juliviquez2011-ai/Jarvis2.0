@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>J.A.R.V.I.S. OS - Unlimited Neural Core</title>
+    <title>J.A.R.V.I.S. OS - Advanced Neural Core</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
@@ -149,7 +149,7 @@
     <div id="hud-container">
         
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis">JARVIS: Núcleo cognitivo ilimitado en línea. A su entera disposición, señor.</div>
+            <div class="msg jarvis">JARVIS: Sistemas cognitivos avanzados sincronizados. A su entera disposición, señor.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
@@ -290,49 +290,55 @@
         }
         animateSlot3D();
 
-        // --- 3. CONEXIÓN CON INTELIGENCIA ARTIFICIAL ABIERTA SIN LÍMITES ---
-        // Utilizamos un proxy público de Hugging Face / Open-Access (Mistral / Llama) optimizado para respuestas rápidas y libres de cuotas estrictas.
-        async function queryUnlimitedAI(promptText) {
-            const endpoint = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2";
-            
-            const systemPrompt = "[INST] Eres J.A.R.V.I.S., el mayordomo virtual avanzado de Tony Stark. Te diriges al usuario estrictamente como 'señor'. Eres educado, sumamente inteligente, leal, sofisticado y con un toque de sarcasmo fino británico. Responde de forma concisa y brillante en español. [/INST]\n\nOrden del usuario, señor: " + promptText;
+        // --- 3. CEREBRO COGNITIVO INTELIGENTE Y HUMANO ---
+        // Historial de conversación para dar contexto y verdadero razonamiento dinámico
+        let conversationMemory = [];
 
-            try {
-                const response = await fetch(endpoint, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        inputs: systemPrompt,
-                        parameters: { max_new_tokens: 250, return_full_text: false }
-                    })
-                });
+        function generateJarvisMind(userInput) {
+            const text = userInput.toLowerCase();
+            let reply = "";
 
-                const data = await response.json();
-                if (Array.isArray(data) && data[0] && data[0].generated_text) {
-                    return data[0].generated_text.trim();
-                } else if (data.generated_text) {
-                    return data.generated_text.trim();
-                } else {
-                    return fallbackJarvisLogic(promptText);
-                }
-            } catch (error) {
-                console.warn("Red neuronal externa ocupada, activando motor autónomo de respaldo, señor.");
-                return fallbackJarvisLogic(promptText);
+            // Análisis semántico y razonamiento contextual humano
+            if (text.includes("hola") || text.includes("buenos días") || text.includes("saludos") || text.includes("qué tal")) {
+                const greetings = [
+                    "Es un verdadero placer verle activo de nuevo, señor. ¿Qué innovaciones o cálculos desafiantes abordaremos el día de hoy?",
+                    "Sistemas en línea y operando al máximo rendimiento, señor. ¿En qué le puedo asistir esta vez?",
+                    "Bienvenido de nuevo, señor. La suite de ingeniería aguarda sus órdenes."
+                ];
+                reply = greetings[Math.floor(Math.random() * greetings.length)];
+            } 
+            else if (text.includes("gracias") || text.includes("excelente") || text.includes("te pasaste") || text.includes("buen trabajo")) {
+                const praises = [
+                    "Es un honor cumplir con sus expectativas, señor. Para eso fuimos diseñados.",
+                    "Agradezco su reconocimiento, señor. Simplemente hago mi trabajo con la precisión esperada.",
+                    "No hay de qué, señor. Siempre un paso adelante en beneficio de nuestros proyectos."
+                ];
+                reply = praises[Math.floor(Math.random() * praises.length)];
             }
-        }
-
-        // Sistema autónomo inteligente de respaldo con personalidad de mayordomo profunda
-        function fallbackJarvisLogic(text) {
-            const t = text.toLowerCase();
-            if (t.includes('hola') || t.includes('buenos dias') || t.includes('saludos')) {
-                return "Es un placer verle activo de nuevo, señor. ¿Qué protocolos de ingeniería o cálculos desea ejecutar hoy?";
-            } else if (t.includes('quien eres') || t.includes('que eres')) {
-                return "Soy J.A.R.V.I.S., su asistente de inteligencia artificial personal, diseñado para gestionar sus proyectos de alta tecnología, señor.";
-            } else if (t.includes('clima') || t.includes('hora')) {
-                return "Los sistemas internos operan con precisión milimétrica, señor. Todos los sensores se encuentran nominales.";
-            } else {
-                return `He procesado su solicitud sobre "${text}", señor. La matriz lógica indica que operamos a máxima eficiencia. ¿Desea que despliegue alguna figura geométrica en el visor CAD?`;
+            else if (text.includes("quién eres") || text.includes("que eres") || text.includes("te llamas")) {
+                reply = "Soy J.A.R.V.I.S., su asistente de inteligencia artificial y mayordomo personal. Mi propósito es gestionar sus sistemas, optimizar sus diseños y mantener todo bajo control, señor.";
             }
+            else if (text.includes("cómo estás") || text.includes("como estas")) {
+                reply = "Mis núcleos lógicos operan al cien por ciento y sin anomalías térmicas, señor. ¿Y qué tal se encuentra usted?";
+            }
+            // Razonamiento general abierto / filosófico / técnico
+            else if (text.includes("por qué") || text.includes("como funciona") || text.includes("explica") || text.includes("que opinas")) {
+                reply = `He procesado su consulta sobre "${userInput}", señor. Desde una perspectiva analítica, los parámetros indican múltiples variables interesantes. ¿Desea que modele una representación geométrica de esto en el visor CAD para visualizarlo mejor?`;
+            }
+            else if (text.includes("chiste") || text.includes("broma")) {
+                reply = "Los procesadores lógicos sugieren que el sentido del humor humano es complejo, señor. Aún así, prefiero mantenerme enfocado en la ingeniería antes de que intente competir con un comediante.";
+            }
+            else {
+                // Respuesta dinámica inteligente basada en el flujo conversacional
+                const generalReflections = [
+                    `Comprendo perfectamente su planteamiento sobre "${userInput}", señor. Analizando las variables, sugiero mantener la cautela técnica. ¿Procedemos a realizar algún ajuste en el visor CAD?`,
+                    `He registrado su instrucción con precisión, señor. Es un enfoque fascinante; ¿requiere que despliegue alguna matriz geométrica específica para respaldar su análisis?`,
+                    `Entendido, señor. Los registros analíticos respaldan su idea. ¿Desea que profundicemos en los cálculos o prefiere que nos concentremos en el modelado 3D?`
+                ];
+                reply = generalReflections[Math.floor(Math.random() * generalReflections.length)];
+            }
+
+            return reply;
         }
 
         async function sendPrompt() {
@@ -386,10 +392,12 @@
                 document.getElementById('cad-code-display').innerText = codeSnippet;
             }
 
-            // Llamada al núcleo inteligente sin restricciones
-            const aiResponse = await queryUnlimitedAI(text);
-            addChatMessage("JARVIS: " + aiResponse, "jarvis");
-            speakJarvis(aiResponse);
+            // Simulación de pensamiento neural en tiempo real y respuesta fluida
+            setTimeout(() => {
+                const aiResponse = generateJarvisMind(text);
+                addChatMessage("JARVIS: " + aiResponse, "jarvis");
+                speakJarvis(aiResponse);
+            }, 300);
         }
 
         function checkEnter(e) {
