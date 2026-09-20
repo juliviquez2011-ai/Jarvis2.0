@@ -67,6 +67,7 @@
             outline: none;
         }
 
+        /* Botón de configuración movido a la esquina inferior derecha */
         #settings-toggle-btn {
             position: absolute;
             bottom: 25px;
@@ -74,6 +75,7 @@
             z-index: 10000;
         }
 
+        /* Menú de Configuración Expandido */
         #settings-modal {
             position: absolute;
             bottom: 80px;
@@ -165,7 +167,7 @@
             width: 400px;
             max-height: 45vh;
             overflow-y: auto;
-            background: var(--theme-bg);
+            background: rgba(2, 8, 19, 0.85);
             border-left: 3px solid var(--theme-color);
             padding: 15px;
             font-size: 13px;
@@ -176,16 +178,16 @@
         .msg.jarvis { color: var(--theme-color); }
         .msg.user { color: #ffffff; text-align: right; }
 
-        /* Marca de agua J.A.R.V.I.S. inferior en tono verde agua */
+        /* Marca de agua J.A.R.V.I.S. verde agua, más grande y desplazada a la derecha */
         #bottom-watermark {
             position: absolute;
-            bottom: 33px;
-            left: 50%;
+            bottom: 30px;
+            left: 58%;
             transform: translateX(-50%);
-            font-size: 13px;
-            letter-spacing: 3px;
+            font-size: 18px;
+            letter-spacing: 4px;
             color: #00ffaa;
-            text-shadow: 0 0 10px rgba(0, 255, 170, 0.6);
+            text-shadow: 0 0 12px rgba(0, 255, 170, 0.7);
             z-index: 5;
             pointer-events: none;
             font-weight: bold;
@@ -194,8 +196,8 @@
         #bottom-bar {
             position: absolute;
             bottom: 25px;
-            width: calc(90% - 140px);
-            max-width: 520px;
+            width: calc(90% - 70px);
+            max-width: 620px;
             left: 30px;
             background: var(--theme-bg);
             border: 1px solid var(--theme-glow);
@@ -253,9 +255,10 @@
 
         <button id="settings-toggle-btn" class="hud-btn interactive" style="padding: 8px 12px; font-size: 13px;" onclick="toggleSettingsMenu()">⚙️ Config</button>
 
+        <!-- Menú de Configuración Extendido -->
         <div id="settings-modal" class="interactive">
             <h3>PANEL DE CONFIGURACIÓN J.A.R.V.I.S.</h3>
-
+            
             <div class="setting-group">
                 <label>Voz del Sistema (Español):</label>
                 <select id="voice-select" onchange="updateSelectedVoice(this.value)">
@@ -274,7 +277,7 @@
 
             <div style="display: flex; gap: 6px; margin-top: 5px;">
                 <button class="hud-btn" style="flex: 1; margin: 0; font-size: 10px; padding: 5px;" onclick="clearChatHistory()">Limpiar Chat</button>
-                <button class="hud-btn" style="flex: 1; margin: 0; font-size: 10px; padding: 5px; border-color: #ffaa00; color: #ffaa00;" onclick="restartSystem()">🔄 Reiniciar</button>
+                <button class="hud-btn" style="flex: 1; margin: 0; font-size: 10px; padding: 5px; border-color: #00ff88; color: #00ff88;" onclick="restartSystem()">🔄 Reiniciar</button>
             </div>
 
             <button class="hud-btn" style="margin-left: 0; margin-top: 2px; text-align: center; font-size: 11px;" onclick="toggleSettingsMenu()">Cerrar Panel</button>
@@ -290,7 +293,7 @@
             <div id="cad-code-display">// Núcleo Neural Activo...\n> A la espera de sus instrucciones, señor.</div>
         </div>
 
-        <!-- Marca de agua J.A.R.V.I.S. en verde agua abajo en el medio -->
+        <!-- Marca de agua J.A.R.V.I.S. verde agua, más grande y corrida a la derecha -->
         <div id="bottom-watermark">J.A.R.V.I.S.</div>
 
         <div id="bottom-bar">
@@ -428,7 +431,7 @@
                 } else if (type === 'torus') {
                     geom = new THREE.TorusGeometry(0.7, 0.25, 16, 32);
                     mat = new THREE.MeshBasicMaterial({ color: 0xff0055, wireframe: true });
-                } else if (type === 'cone' || type === 'triangulo') {
+                } else if (type === 'cone') {
                     geom = new THREE.ConeGeometry(0.8, 1.4, 16);
                     mat = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true });
                 } else if (type === 'pyramid') {
@@ -542,9 +545,9 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        model: "llama-3.3-70b-versatile", // Modelo grande oficial para evitar cortes
+                        model: "openai/gpt-oss-20b",
                         messages: chatHistory,
-                        max_tokens: 4096,
+                        max_tokens: 300,
                         temperature: 0.7
                     })
                 });
@@ -575,10 +578,10 @@
             const lower = text.toLowerCase();
             let codeSnippet = '';
 
-            if (lower.includes("armadura") || lower.includes("traje") || lower.includes("mark") || lower.includes("stark")) {
+            if (lower.includes("armadura") || lower.includes("traje") || lower.includes("mark")) {
                 updateVisorModel('armor');
-                codeSnippet = '// PROTOCOLO STARK ACTIVO\nAssembly.loadArmorMatrix();\nStatus: [OK] - Color Rojo/Dorado';
-            } else if (lower.includes("esfera") || lower.includes("circulo") || lower.includes("circulito") || lower.includes("bola")) {
+                codeSnippet = '// PROTOCOLO STARK\nAssembly.loadArmorMatrix();\nStatus: [OK]';
+            } else if (lower.includes("esfera") || lower.includes("circulo") || lower.includes("bola")) {
                 updateVisorModel('sphere');
                 codeSnippet = '// Geometría Esférica\nGeometry.createSphere();\nStatus: [OK]';
             } else if (lower.includes("cilindro") || lower.includes("tubo")) {
@@ -593,9 +596,6 @@
             } else if (lower.includes("pirámide") || lower.includes("piramide")) {
                 updateVisorModel('pyramid');
                 codeSnippet = '// Geometría Piramidal\nGeometry.createPyramid();\nStatus: [OK]';
-            } else if (lower.includes("triángulo") || lower.includes("triangulo")) {
-                updateVisorModel('triangulo');
-                codeSnippet = '// Matriz Triangular\nGeometry.createTriangle();\nStatus: [OK]';
             } else if (lower.includes("cubo") || lower.includes("caja") || lower.includes("cuadrado")) {
                 updateVisorModel('box');
                 codeSnippet = '// Matriz Cúbica\nGeometry.createBox();\nStatus: [OK]';
@@ -631,7 +631,7 @@
                 
                 speech.lang = 'es-ES';
                 speech.rate = voiceRateVal;
-                speech.pitch = 0.7; // Tono formal de mayordomo
+                speech.pitch = 0.7;
 
                 if (voicesList.length > 0 && voicesList[selectedVoiceIndex]) {
                     speech.voice = voicesList[selectedVoiceIndex];
