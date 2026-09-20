@@ -61,6 +61,56 @@
             outline: none;
         }
 
+        #settings-toggle-btn {
+            position: absolute;
+            top: 20px;
+            left: 280px;
+            z-index: 100;
+        }
+
+        /* Menú de Configuración de Trato y Voz */
+        #settings-modal {
+            position: absolute;
+            top: 80px;
+            left: 30px;
+            width: 320px;
+            background: rgba(2, 8, 19, 0.95);
+            border: 1px solid #00f0ff;
+            border-radius: 12px;
+            padding: 15px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.3);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+        }
+        #settings-modal h3 {
+            font-size: 13px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+            padding-bottom: 5px;
+            letter-spacing: 1px;
+            color: #00ffcc;
+        }
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 11px;
+        }
+        .setting-group label {
+            color: #00f0ff;
+        }
+        .setting-group select {
+            background: #000;
+            border: 1px solid #00f0ff;
+            color: #00ff66;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 11px;
+            outline: none;
+        }
+
         #top-right-slot {
             position: absolute;
             top: 20px;
@@ -105,7 +155,7 @@
 
         #jarvis-chat {
             position: absolute;
-            top: 80px;
+            top: 140px;
             left: 30px;
             width: 400px;
             max-height: 45vh;
@@ -180,8 +230,32 @@
             <button class="hud-btn" style="padding: 2px 8px; font-size: 10px;" onclick="saveGroqKey()">Guardar</button>
         </div>
 
+        <button id="settings-toggle-btn" class="hud-btn interactive" style="padding: 5px 10px; font-size: 11px;" onclick="toggleSettingsMenu()">⚙️ Config</button>
+
+        <!-- Menú de Configuración Personalizada -->
+        <div id="settings-modal" class="interactive">
+            <h3>PANEL DE CONFIGURACIÓN J.A.R.V.I.S.</h3>
+            
+            <div class="setting-group">
+                <label>Forma de Trato:</label>
+                <select id="address-mode-select" onchange="updateAddressMode(this.value)">
+                    <option value="bro">Llamarme "bro"</option>
+                    <option value="senor">Llamarme "señor"</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label>Voz del Sistema (TTS):</label>
+                <select id="voice-select" onchange="updateSelectedVoice(this.value)">
+                    <option value="">Cargando voces...</option>
+                </select>
+            </div>
+
+            <button class="hud-btn" style="margin-left: 0; margin-top: 5px; text-align: center;" onclick="toggleSettingsMenu()">Cerrar Panel</button>
+        </div>
+
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis">JARVIS: Núcleo actualizado a GPT-OSS 20B. Interfaz holográfica avanzada activa, bro.</div>
+            <div class="msg jarvis" id="welcome-msg">JARVIS: Núcleo neural activo, bro.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
@@ -206,13 +280,11 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
 
-        // Geometría principal del núcleo central
         const sphereGeo = new THREE.SphereGeometry(1.8, 32, 32);
         const sphereMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.3 });
         const coreSphere = new THREE.Mesh(sphereGeo, sphereMat);
         scene.add(coreSphere);
 
-        // Múltiples anillos holográficos avanzados con rotación y diseño orbital
         const ringGeo1 = new THREE.RingGeometry(2.3, 2.7, 64);
         const ringMat1 = new THREE.MeshBasicMaterial({ color: 0x00aaff, side: THREE.DoubleSide, transparent: true, opacity: 0.6, wireframe: true });
         const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
@@ -235,7 +307,6 @@
 
         camera.position.z = 7;
 
-        // Bucle de animación del fondo holográfico con cambio de color continuo (efecto RGB dinámico)
         let clock = new THREE.Clock();
         function animateHolo() {
             requestAnimationFrame(animateHolo);
@@ -247,19 +318,15 @@
             ring3.rotation.x += 0.005;
             ring3.rotation.y -= 0.007;
 
-            // Cambio de color dinámico fluido basado en el tiempo (Hue Shift)
             let dynamicHue = (elapsedTime * 0.05) % 1;
-            let dynamicColor = new THREE.Color().setHSL(dynamicHue, 1.0, 0.5);
-            
-            ringMat1.color = dynamicColor;
-            ringMat2.color = new THREE.Color().setHSL((dynamicHue + 0.3) % 1, 1.0, 0.5);
-            ringMat3.color = new THREE.Color().setHSL((dynamicHue + 0.6) % 1, 1.0, 0.5);
+            ringMat1.color.setHSL(dynamicHue, 1.0, 0.5);
+            ringMat2.color.setHSL((dynamicHue + 0.3) % 1, 1.0, 0.5);
+            ringMat3.color.setHSL((dynamicHue + 0.6) % 1, 1.0, 0.5);
 
             renderer.render(scene, camera);
         }
         animateHolo();
 
-        // Visor 3D superior derecho (CAD Model Preview)
         const viewerContainer = document.getElementById('viewer-3d');
         const scene3D = new THREE.Scene();
         const camera3D = new THREE.PerspectiveCamera(60, viewerContainer.clientWidth / viewerContainer.clientHeight, 0.1, 1000);
@@ -333,15 +400,66 @@
         }
         animateSlot3D();
 
+        let currentMode = 'bro';
+        let selectedVoiceIndex = 0;
+        let voicesList = [];
+
+        function getSystemPrompt() {
+            if (currentMode === 'bro') {
+                return "Eres J.A.R.V.I.S., el asistente de IA. Te diriges al usuario estrictamente, en cada respuesta y sin excepciones, como 'bro'. Eres amigable, moderno, leal y directo.";
+            } else {
+                return "Eres J.A.R.V.I.S., el mayordomo virtual y asistente de inteligencia artificial de Tony Stark. Te diriges al usuario estrictamente, en cada respuesta y sin excepciones, como 'señor'. Eres educado, sumamente inteligente, leal, sofisticado y formal.";
+            }
+        }
+
         let chatHistory = [
-            { role: "system", content: "Eres J.A.R.V.I.S., el mayordomo virtual y asistente de inteligencia artificial. Te diriges al usuario estrictamente como 'bro'. Eres educado, sumamente inteligente, leal, sofisticado y con un toque moderno." }
+            { role: "system", content: getSystemPrompt() }
         ];
+
+        function toggleSettingsMenu() {
+            const modal = document.getElementById('settings-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function updateAddressMode(mode) {
+            currentMode = mode;
+            chatHistory[0].content = getSystemPrompt();
+            
+            let term = (mode === 'bro') ? 'bro' : 'señor';
+            document.getElementById('welcome-msg').innerText = `JARVIS: Modo de trato actualizado a "${term}".`;
+            document.getElementById('user-input').placeholder = `Indique su orden a JARVIS, ${term}...`;
+            document.getElementById('cad-code-display').innerText = `// Protocolo de trato cambiado\n> Tratando al usuario como: ${term}.`;
+        }
+
+        function loadVoices() {
+            if (!('speechSynthesis' in window)) return;
+            voicesList = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('es'));
+            const select = document.getElementById('voice-select');
+            select.innerHTML = '';
+            
+            voicesList.forEach((voice, index) => {
+                let opt = document.createElement('option');
+                opt.value = index;
+                opt.text = `${voice.name} (${voice.lang})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function updateSelectedVoice(index) {
+            selectedVoiceIndex = parseInt(index);
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+            setTimeout(loadVoices, 300);
+        }
 
         function saveGroqKey() {
             const key = document.getElementById('groq-key-input').value.trim();
             if (key) {
                 localStorage.setItem('groq_api_key', key);
-                addChatMessage("JARVIS: Llave de Groq guardada correctamente en memoria, bro.", "jarvis");
+                let term = (currentMode === 'bro') ? 'bro' : 'señor';
+                addChatMessage(`JARVIS: Llave de Groq guardada correctamente en memoria, ${term}.`, "jarvis");
             }
         }
 
@@ -354,11 +472,13 @@
 
         async function queryGroqAI(userText) {
             const apiKey = localStorage.getItem('groq_api_key') || document.getElementById('groq-key-input').value.trim();
+            let term = (currentMode === 'bro') ? 'bro' : 'señor';
             
             if (!apiKey) {
-                return "Por favor, introduzca su API Key gratuita de Groq en el panel superior izquierdo para activar mis funciones cognitivas completas, bro.";
+                return `Por favor, introduzca su API Key de Groq en el panel superior izquierdo para activar mis funciones cognitivas, ${term}.`;
             }
 
+            chatHistory[0].content = getSystemPrompt();
             chatHistory.push({ role: "user", content: userText });
 
             try {
@@ -384,10 +504,10 @@
                 } else if (data.error) {
                     return `Error de Groq: ${data.error.message}`;
                 } else {
-                    return "Recepción de datos fallida con el clúster de Groq, bro.";
+                    return `Recepción de datos fallida con el clúster de Groq, ${term}.`;
                 }
             } catch (err) {
-                return "Error de red al conectar con los servidores de Groq, bro.";
+                return `Error de red al conectar con los servidores de Groq, ${term}.`;
             }
         }
 
@@ -455,20 +575,14 @@
                 
                 speech.lang = 'es-ES';
                 speech.rate = 0.95;
-                speech.pitch = 0.7;
+                speech.pitch = (currentMode === 'bro') ? 0.9 : 0.7;
 
-                let voices = window.speechSynthesis.getVoices();
-                let selectedVoice = voices.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('microsoft raul'))) 
-                                 || voices.find(v => v.lang.startsWith('es') && !v.name.toLowerCase().includes('female') && !v.name.toLowerCase().includes('helena') && !v.name.toLowerCase().includes('laura'))
-                                 || voices.find(v => v.lang.startsWith('es'));
+                if (voicesList.length > 0 && voicesList[selectedVoiceIndex]) {
+                    speech.voice = voicesList[selectedVoiceIndex];
+                }
 
-                if (selectedVoice) speech.voice = selectedVoice;
                 window.speechSynthesis.speak(speech);
             }
-        }
-
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
         }
 
         window.addEventListener('resize', () => {
