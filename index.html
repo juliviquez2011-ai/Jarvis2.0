@@ -181,7 +181,7 @@
         </div>
 
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis">JARVIS: Sistemas visuales y cognitivos en línea. A su entera disposición, bro.</div>
+            <div class="msg jarvis">JARVIS: Sistemas reconectados y estables. A su entera disposición, bro.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
@@ -344,7 +344,7 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        model: "llama-3.1-8b-instant",
+                        model: "llama3-8b-8192", // Modelo ultra estable y garantizado en Groq
                         messages: chatHistory,
                         max_tokens: 300,
                         temperature: 0.7
@@ -454,11 +454,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
