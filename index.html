@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>J.A.R.V.I.S. OS - Dual Neural Core (Gemini / Groq)</title>
+    <title>J.A.R.V.I.S. OS - Dual Neural Core</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
@@ -323,7 +323,7 @@
         <div id="top-right-slot" class="interactive">
             <div class="slot-title">SLOT 3D & BUSCADOR CAD</div>
             <div id="viewer-3d"></div>
-            <div id="cad-code-display">// Sistema de Red Listos...\n> Pida un modelo para buscar enlaces en internet, señor.</div>
+            <div id="cad-code-display">// Sistema de Red Listos...\n> Pida un modelo para calcular dimensiones y buscar enlaces, señor.</div>
         </div>
 
         <div id="bottom-watermark">J.A.R.V.I.S.</div>
@@ -521,12 +521,11 @@
                 return;
             }
 
-            // Ordenar priorizando nombres masculinos típicos en dispositivos Apple/Android
             voicesList.sort((a, b) => {
                 const nameA = a.name.toLowerCase();
                 const nameB = b.name.toLowerCase();
                 const isMaleA = nameA.includes('pablo') || nameA.includes('alvaro') || nameA.includes('jorge') || nameA.includes('carlos') || nameA.includes('diego') || nameA.includes('males') || nameA.includes('david');
-                const isMaleB = nameB.includes('pablo') || nameB.includes('alvaro') || nameB.includes('jorge') || nameB.includes('carlos') || nameB.includes('diego') || nameB.includes('males') || nameB.includes('david');
+                const isMaleB = nameB.includes('pablo') || nameB.includes('alvaro') || nameB.includes('jorge') || nameB.includes('carlos') || nameB.includes('diego') || nameB.includes('david');
                 return (isMaleB ? 1 : 0) - (isMaleA ? 1 : 0);
             });
 
@@ -539,7 +538,6 @@
                 select.appendChild(opt);
             });
 
-            // Seleccionar automáticamente la primera masculina si existe
             selectedVoiceIndex = 0;
         }
 
@@ -574,7 +572,6 @@
             if (savedGroqKey) document.getElementById('groq-key-input').value = savedGroqKey;
         });
 
-        // Configuración de Reconocimiento de Voz
         let recognition = null;
         let isListening = false;
         let shouldKeepListening = false;
@@ -643,23 +640,22 @@
             }
         }
 
-        // Sistema Dual de Inteligencia Artificial (Gemini 3.5 con respaldo en Groq)
+        // Sistema Dual Actualizado: Gemini 3.5 / Flash más reciente con respaldo en Groq
         async function queryAI(userText) {
             const geminiKey = localStorage.getItem('gemini_api_key') || document.getElementById('gemini-key-input').value.trim();
             const groqKey = localStorage.getItem('groq_api_key') || document.getElementById('groq-key-input').value.trim();
 
             chatHistory.push({ role: "user", content: userText });
 
-            // 1. Intentar primero con Gemini (Gemini 2.5/3.5 Flash o Pro endpoint actual)
+            // 1. Intentar con Gemini usando el modelo flash más actual de la versión v1beta
             if (geminiKey) {
                 try {
-                    // Mapeo adaptado para el formato de historial de Gemini API
                     const contents = chatHistory.filter(m => m.role !== 'system').map(m => ({
                         role: m.role === 'assistant' ? 'model' : 'user',
                         parts: [{ text: m.content }]
                     }));
 
-                    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+                    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -679,7 +675,7 @@
                 }
             }
 
-            // 2. Respaldo Automático con Groq si Gemini falla o no tiene llave
+            // 2. Respaldo Automático con Groq si Gemini falla
             if (groqKey) {
                 try {
                     chatHistory[0].content = getSystemPrompt();
@@ -722,34 +718,38 @@
             const lower = text.toLowerCase();
             let codeSnippet = '';
 
-            // Detección de Modelos 3D y Búsqueda en Internet
-            if (lower.includes("busca") || lower.includes("modelo") || lower.includes("stl") || lower.includes("imprimir")) {
+            // Detección avanzada de Modelos 3D y Dimensiones
+            if (lower.includes("busca") || lower.includes("modelo") || lower.includes("stl") || lower.includes("imprimir") || lower.includes("brazo")) {
                 let searchTerm = encodeURIComponent(text.replace(/jarvis|busca|el modelo|de|para|imprimir/gi, "").trim());
-                codeSnippet = `// BÚSQUEDA CAD EN RED\nQuery: "${decodeURIComponent(searchTerm)}"\nStatus: [ENLACES GENERADOS]`;
                 
-                let searchHtml = `JARVIS: He localizado registros en la red para su solicitud, señor.<br>
+                // Extraer o simular dimensiones técnicas si el usuario especificó tamaño (ej. 20x20x20)
+                let dimText = "20x20x20 cm (Estructura Estándar)";
+                if (lower.includes("20x20")) dimText = "20 x 20 x 20 cm [Optimizada Resistencia]";
+                
+                codeSnippet = `// MÓDULO CAD - BÚSQUEDA WEB\nQuery: "${decodeURIComponent(searchTerm)}"\nDimensiones: ${dimText}\nStatus: [ENLACES Y DATOS LISTOS]`;
+                
+                let searchHtml = `JARVIS: He localizado registros e integrado las dimensiones técnicas para su solicitud, señor.<br>
                 <a class="model-link-btn" href="https://www.printables.com/search/models?q=${searchTerm}" target="_blank">🔍 Buscar en Printables</a>
                 <a class="model-link-btn" href="https://www.thingiverse.com/search?q=${searchTerm}" target="_blank">🔍 Buscar en Thingiverse</a>`;
                 
                 document.getElementById('cad-code-display').innerText = codeSnippet;
                 addChatMessage(searchHtml, "jarvis", true);
-                speakJarvis("He localizado los enlaces de descarga para su modelo en la red, señor.");
+                speakJarvis("He localizado los enlaces de descarga y cargado las dimensiones en el compilador CAD, señor.");
                 return;
             }
 
-            // Geometrías predeterminadas del visor
             if (lower.includes("armadura") || lower.includes("traje") || lower.includes("mark")) {
                 updateVisorModel('armor');
-                codeSnippet = '// PROTOCOLO STARK\nAssembly.loadArmorMatrix();\nStatus: [OK]';
+                codeSnippet = '// PROTOCOLO STARK\nAssembly.loadArmorMatrix();\nDimensiones: Escala Humana\nStatus: [OK]';
             } else if (lower.includes("esfera")) {
                 updateVisorModel('sphere');
-                codeSnippet = '// Geometría Esférica\nGeometry.createSphere();\nStatus: [OK]';
+                codeSnippet = '// Geometría Esférica\nGeometry.createSphere();\nRadio: 0.9m\nStatus: [OK]';
             } else if (lower.includes("cilindro")) {
                 updateVisorModel('cylinder');
-                codeSnippet = '// Geometría Cilíndrica\nGeometry.createCylinder();\nStatus: [OK]';
+                codeSnippet = '// Geometría Cilíndrica\nGeometry.createCylinder();\nDimensiones: 1.2 x 1.3m\nStatus: [OK]';
             } else if (lower.includes("cubo") || lower.includes("caja")) {
                 updateVisorModel('box');
-                codeSnippet = '// Matriz Cúbica\nGeometry.createBox();\nStatus: [OK]';
+                codeSnippet = '// Matriz Cúbica\nGeometry.createBox();\nDimensiones: 1.0 x 1.0m\nStatus: [OK]';
             }
 
             if (codeSnippet) {
@@ -777,13 +777,12 @@
         function speakJarvis(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                // Limpiar etiquetas HTML si las hubiera para la locución de voz
                 const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/["'«»\[\]]/g, '');
                 const speech = new SpeechSynthesisUtterance(cleanText);
                 
                 speech.lang = 'es-ES';
                 speech.rate = voiceRateVal;
-                speech.pitch = 0.6; // Tono más grave para simular voz de asistente formal
+                speech.pitch = 0.6;
 
                 if (voicesList.length > 0 && voicesList[selectedVoiceIndex]) {
                     speech.voice = voicesList[selectedVoiceIndex];
