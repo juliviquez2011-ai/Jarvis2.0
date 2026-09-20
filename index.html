@@ -181,7 +181,7 @@
         </div>
 
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis">JARVIS: Núcleo Groq ultra-rápido sincronizado. A su entera disposición, señor.</div>
+            <div class="msg jarvis">JARVIS: Núcleo Neural actualizado. A su entera disposición, señor.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
@@ -320,7 +320,6 @@
         }
         animateSlot3D();
 
-        // AQUí SE CONFIGURA ESTRICTAMENTE EL TRATO DE "SEÑOR"
         let chatHistory = [
             { role: "system", content: "Eres J.A.R.V.I.S., el mayordomo virtual y asistente de inteligencia artificial de Tony Stark. Te diriges al usuario estrictamente y sin excepciones como 'señor'. Eres educado, sumamente inteligente, leal, sofisticado y con un toque de sarcasmo fino británico. Respondes con naturalidad y fluidez." }
         ];
@@ -357,7 +356,7 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        model: "llama-3.1-8b-instant",
+                        model: "openai/gpt-oss-20b",
                         messages: chatHistory,
                         max_tokens: 300,
                         temperature: 0.7
