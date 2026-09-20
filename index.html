@@ -7,7 +7,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
-        body, html { width: 100%; height: 100%; background-color: #020813; color: #00f0ff; overflow: hidden; }
+        body, html { width: 100%; height: 100%; background-color: #020813; color: var(--theme-color, #00f0ff); overflow: hidden; transition: background 0.5s ease; }
+
+        :root {
+            --theme-color: #00f0ff;
+            --theme-glow: rgba(0, 240, 255, 0.4);
+            --theme-bg: rgba(2, 8, 19, 0.95);
+        }
 
         #hud-container {
             position: relative;
@@ -39,8 +45,8 @@
             position: absolute;
             top: 20px;
             left: 30px;
-            background: rgba(2, 8, 19, 0.9);
-            border: 1px solid rgba(0, 240, 255, 0.4);
+            background: var(--theme-bg);
+            border: 1px solid var(--theme-glow);
             padding: 8px 12px;
             border-radius: 8px;
             font-size: 11px;
@@ -52,7 +58,7 @@
         }
         #api-config-panel input {
             background: #000;
-            border: 1px solid #00f0ff;
+            border: 1px solid var(--theme-color);
             color: #00ff66;
             padding: 4px 8px;
             border-radius: 4px;
@@ -61,7 +67,6 @@
             outline: none;
         }
 
-        /* Botón de configuración movido a la esquina inferior derecha */
         #settings-toggle-btn {
             position: absolute;
             bottom: 25px;
@@ -69,18 +74,17 @@
             z-index: 10000;
         }
 
-        /* Menú de Configuración Expandido (esquina inferior derecha) */
         #settings-modal {
             position: absolute;
             bottom: 80px;
             right: 25px;
             width: 320px;
-            background: rgba(2, 8, 19, 0.95);
-            border: 1px solid #00f0ff;
+            background: var(--theme-bg);
+            border: 1px solid var(--theme-color);
             border-radius: 12px;
             padding: 15px;
             backdrop-filter: blur(12px);
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 25px var(--theme-glow);
             z-index: 20000;
             display: none;
             flex-direction: column;
@@ -88,10 +92,10 @@
         }
         #settings-modal h3 {
             font-size: 13px;
-            border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+            border-bottom: 1px solid var(--theme-glow);
             padding-bottom: 5px;
             letter-spacing: 1px;
-            color: #00ffcc;
+            color: var(--theme-color);
         }
         .setting-group {
             display: flex;
@@ -100,11 +104,11 @@
             font-size: 11px;
         }
         .setting-group label {
-            color: #00f0ff;
+            color: var(--theme-color);
         }
         .setting-group select {
             background: #000;
-            border: 1px solid #00f0ff;
+            border: 1px solid var(--theme-color);
             color: #00ff66;
             padding: 5px;
             border-radius: 4px;
@@ -118,8 +122,8 @@
             right: 20px;
             width: 340px;
             height: 260px;
-            border: 2px dashed rgba(0, 240, 255, 0.5);
-            background: rgba(2, 8, 19, 0.9);
+            border: 2px dashed var(--theme-glow);
+            background: var(--theme-bg);
             border-radius: 12px;
             display: flex;
             flex-direction: column;
@@ -138,7 +142,7 @@
             width: 100%;
             height: 75px;
             background: rgba(0, 10, 25, 0.9);
-            border: 1px solid rgba(0, 240, 255, 0.3);
+            border: 1px solid var(--theme-glow);
             border-radius: 4px;
             margin-top: 6px;
             padding: 5px;
@@ -151,7 +155,7 @@
             font-size: 11px;
             margin-bottom: 4px;
             letter-spacing: 1px;
-            color: #00f0ff;
+            color: var(--theme-color);
         }
 
         #jarvis-chat {
@@ -161,31 +165,46 @@
             width: 400px;
             max-height: 45vh;
             overflow-y: auto;
-            background: rgba(2, 8, 19, 0.85);
-            border-left: 3px solid #00f0ff;
+            background: var(--theme-bg);
+            border-left: 3px solid var(--theme-color);
             padding: 15px;
             font-size: 13px;
             border-radius: 0 8px 8px 0;
             backdrop-filter: blur(5px);
         }
         .msg { margin-bottom: 12px; line-height: 1.4; }
-        .msg.jarvis { color: #00f0ff; }
+        .msg.jarvis { color: var(--theme-color); }
         .msg.user { color: #ffffff; text-align: right; }
+
+        /* Marca de agua J.A.R.V.I.S. inferior en tono verde agua */
+        #bottom-watermark {
+            position: absolute;
+            bottom: 33px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            letter-spacing: 3px;
+            color: #00ffaa;
+            text-shadow: 0 0 10px rgba(0, 255, 170, 0.6);
+            z-index: 5;
+            pointer-events: none;
+            font-weight: bold;
+        }
 
         #bottom-bar {
             position: absolute;
             bottom: 25px;
-            width: calc(90% - 70px);
-            max-width: 620px;
+            width: calc(90% - 140px);
+            max-width: 520px;
             left: 30px;
-            background: rgba(2, 8, 19, 0.95);
-            border: 1px solid rgba(0, 240, 255, 0.4);
+            background: var(--theme-bg);
+            border: 1px solid var(--theme-glow);
             border-radius: 30px;
             display: flex;
             align-items: center;
             padding: 8px 15px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 20px var(--theme-glow);
             z-index: 9999;
             pointer-events: auto;
         }
@@ -203,8 +222,8 @@
 
         .hud-btn {
             background: transparent;
-            border: 1px solid #00f0ff;
-            color: #00f0ff;
+            border: 1px solid var(--theme-color);
+            color: var(--theme-color);
             padding: 8px 14px;
             border-radius: 20px;
             cursor: pointer;
@@ -214,9 +233,9 @@
             pointer-events: auto;
         }
         .hud-btn:hover {
-            background: #00f0ff;
+            background: var(--theme-color);
             color: #020813;
-            box-shadow: 0 0 10px #00f0ff;
+            box-shadow: 0 0 10px var(--theme-color);
         }
     </style>
 </head>
@@ -234,17 +253,8 @@
 
         <button id="settings-toggle-btn" class="hud-btn interactive" style="padding: 8px 12px; font-size: 13px;" onclick="toggleSettingsMenu()">⚙️ Config</button>
 
-        <!-- Menú de Configuración Extendido -->
         <div id="settings-modal" class="interactive">
             <h3>PANEL DE CONFIGURACIÓN J.A.R.V.I.S.</h3>
-            
-            <div class="setting-group">
-                <label>Forma de Trato:</label>
-                <select id="address-mode-select" onchange="updateAddressMode(this.value)">
-                    <option value="bro">Llamarme "bro"</option>
-                    <option value="senor">Llamarme "señor"</option>
-                </select>
-            </div>
 
             <div class="setting-group">
                 <label>Voz del Sistema (Español):</label>
@@ -264,24 +274,27 @@
 
             <div style="display: flex; gap: 6px; margin-top: 5px;">
                 <button class="hud-btn" style="flex: 1; margin: 0; font-size: 10px; padding: 5px;" onclick="clearChatHistory()">Limpiar Chat</button>
-                <button class="hud-btn" style="flex: 1; margin: 0; font-size: 10px; padding: 5px; border-color: #00ff88; color: #00ff88;" onclick="restartSystem()">🔄 Reiniciar</button>
+                <button class="hud-btn" style="flex: 1; margin: 0; font-size: 10px; padding: 5px; border-color: #ffaa00; color: #ffaa00;" onclick="restartSystem()">🔄 Reiniciar</button>
             </div>
 
             <button class="hud-btn" style="margin-left: 0; margin-top: 2px; text-align: center; font-size: 11px;" onclick="toggleSettingsMenu()">Cerrar Panel</button>
         </div>
 
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis" id="welcome-msg">JARVIS: Núcleo neural activo, bro.</div>
+            <div class="msg jarvis" id="welcome-msg">JARVIS: Núcleo neural activo, señor.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
             <div class="slot-title">SLOT 3D & COMPILADOR CAD</div>
             <div id="viewer-3d"></div>
-            <div id="cad-code-display">// Núcleo Neural Activo...\n> A la espera de sus instrucciones, bro.</div>
+            <div id="cad-code-display">// Núcleo Neural Activo...\n> A la espera de sus instrucciones, señor.</div>
         </div>
 
+        <!-- Marca de agua J.A.R.V.I.S. en verde agua abajo en el medio -->
+        <div id="bottom-watermark">J.A.R.V.I.S.</div>
+
         <div id="bottom-bar">
-            <input type="text" id="user-input" placeholder="Indique su orden a JARVIS, bro..." onkeypress="checkEnter(event)">
+            <input type="text" id="user-input" placeholder="Indique su orden a JARVIS, señor..." onkeypress="checkEnter(event)">
             <button class="hud-btn" onclick="sendPrompt()">Enviar</button>
         </div>
 
@@ -324,6 +337,8 @@
         camera.position.z = 7;
 
         let clock = new THREE.Clock();
+        let isStarkMode = false;
+
         function animateHolo() {
             requestAnimationFrame(animateHolo);
             let elapsedTime = clock.getElapsedTime();
@@ -334,10 +349,12 @@
             ring3.rotation.x += 0.005;
             ring3.rotation.y -= 0.007;
 
-            let dynamicHue = (elapsedTime * 0.05) % 1;
-            ringMat1.color.setHSL(dynamicHue, 1.0, 0.5);
-            ringMat2.color.setHSL((dynamicHue + 0.3) % 1, 1.0, 0.5);
-            ringMat3.color.setHSL((dynamicHue + 0.6) % 1, 1.0, 0.5);
+            if (!isStarkMode) {
+                let dynamicHue = (elapsedTime * 0.05) % 1;
+                ringMat1.color.setHSL(dynamicHue, 1.0, 0.5);
+                ringMat2.color.setHSL((dynamicHue + 0.3) % 1, 1.0, 0.5);
+                ringMat3.color.setHSL((dynamicHue + 0.6) % 1, 1.0, 0.5);
+            }
 
             renderer.render(scene, camera);
         }
@@ -354,6 +371,26 @@
         scene3D.add(activeMeshGroup);
         camera3D.position.z = 3.2;
 
+        function setStarkTheme(active) {
+            isStarkMode = active;
+            const root = document.documentElement;
+            if (active) {
+                root.style.setProperty('--theme-color', '#ff3333');
+                root.style.setProperty('--theme-glow', 'rgba(255, 170, 0, 0.5)');
+                root.style.setProperty('--theme-bg', 'rgba(20, 2, 2, 0.95)');
+                
+                coreSphere.material.color.setHex(0xff3333);
+                ringMat1.color.setHex(0xffaa00);
+                ringMat2.color.setHex(0xff3333);
+                ringMat3.color.setHex(0xffaa00);
+            } else {
+                root.style.setProperty('--theme-color', '#00f0ff');
+                root.style.setProperty('--theme-glow', 'rgba(0, 240, 255, 0.4)');
+                root.style.setProperty('--theme-bg', 'rgba(2, 8, 19, 0.95)');
+                coreSphere.material.color.setHex(0x00f0ff);
+            }
+        }
+
         function updateVisorModel(type) {
             while(activeMeshGroup.children.length > 0){ 
                 const obj = activeMeshGroup.children[0];
@@ -363,6 +400,7 @@
             }
 
             if (type === 'armor') {
+                setStarkTheme(true);
                 const matGold = new THREE.MeshBasicMaterial({ color: 0xffaa00, wireframe: true });
                 const matRed = new THREE.MeshBasicMaterial({ color: 0xff0033, wireframe: true });
                 const chestBox = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.1, 0.5), matRed);
@@ -379,6 +417,7 @@
                 activeMeshGroup.add(shoulderL);
                 activeMeshGroup.add(shoulderR);
             } else {
+                setStarkTheme(false);
                 let geom, mat;
                 if (type === 'sphere') {
                     geom = new THREE.SphereGeometry(0.9, 16, 16);
@@ -389,7 +428,7 @@
                 } else if (type === 'torus') {
                     geom = new THREE.TorusGeometry(0.7, 0.25, 16, 32);
                     mat = new THREE.MeshBasicMaterial({ color: 0xff0055, wireframe: true });
-                } else if (type === 'cone') {
+                } else if (type === 'cone' || type === 'triangulo') {
                     geom = new THREE.ConeGeometry(0.8, 1.4, 16);
                     mat = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true });
                 } else if (type === 'pyramid') {
@@ -416,17 +455,12 @@
         }
         animateSlot3D();
 
-        let currentMode = 'bro';
         let selectedVoiceIndex = 0;
         let voiceRateVal = 0.9;
         let voicesList = [];
 
         function getSystemPrompt() {
-            if (currentMode === 'bro') {
-                return "Eres J.A.R.V.I.S., el asistente de IA. Te diriges al usuario estrictamente, en cada respuesta y sin excepciones, como 'bro'. Eres amigable, moderno, leal y directo.";
-            } else {
-                return "Eres J.A.R.V.I.S., el mayordomo virtual y asistente de inteligencia artificial de Tony Stark. Te diriges al usuario estrictamente, en cada respuesta y sin excepciones, como 'señor'. Eres educado, sumamente inteligente, leal, sofisticado y formal.";
-            }
+            return "Eres J.A.R.V.I.S., el mayordomo virtual y asistente de inteligencia artificial de Tony Stark. Te diriges al usuario estrictamente, en cada respuesta y sin excepciones, como 'señor'. Eres educado, sumamente inteligente, leal, sofisticado y formal.";
         }
 
         let chatHistory = [
@@ -438,19 +472,8 @@
             modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
         }
 
-        function updateAddressMode(mode) {
-            currentMode = mode;
-            chatHistory[0].content = getSystemPrompt();
-            
-            let term = (mode === 'bro') ? 'bro' : 'señor';
-            document.getElementById('welcome-msg').innerText = `JARVIS: Modo de trato actualizado a "${term}".`;
-            document.getElementById('user-input').placeholder = `Indique su orden a JARVIS, ${term}...`;
-            document.getElementById('cad-code-display').innerText = `// Protocolo de trato cambiado\n> Tratando al usuario como: ${term}.`;
-        }
-
         function loadVoices() {
             if (!('speechSynthesis' in window)) return;
-            // Filtramos voces en español
             voicesList = window.speechSynthesis.getVoices().filter(v => v.lang.toLowerCase().includes('es'));
             const select = document.getElementById('voice-select');
             select.innerHTML = '';
@@ -465,7 +488,6 @@
             voicesList.forEach((voice, index) => {
                 let opt = document.createElement('option');
                 opt.value = index;
-                // Intentamos identificar si el nombre sugiere voz masculina o de otro tipo para guiarte
                 let tag = voice.name.toLowerCase();
                 let genderHint = (tag.includes('pablo') || tag.includes('raul') || tag.includes('alvaro') || tag.includes('jorge') || tag.includes('male') || tag.includes('david') || tag.includes('carlos')) ? ' [Hombre]' : '';
                 opt.text = `${voice.name} (${voice.lang})${genderHint}`;
@@ -473,23 +495,16 @@
             });
         }
 
-        function updateSelectedVoice(index) {
-            selectedVoiceIndex = parseInt(index);
-        }
-
-        function updateVoiceRate(val) {
-            voiceRateVal = parseFloat(val);
-        }
+        function updateSelectedVoice(index) { selectedVoiceIndex = parseInt(index); }
+        function updateVoiceRate(val) { voiceRateVal = parseFloat(val); }
 
         function clearChatHistory() {
             const chat = document.getElementById('jarvis-chat');
-            chat.innerHTML = `<div class="msg jarvis" id="welcome-msg">JARVIS: Memoria de chat depurada, bro.</div>`;
+            chat.innerHTML = `<div class="msg jarvis" id="welcome-msg">JARVIS: Memoria de chat depurada, señor.</div>`;
             chatHistory = [{ role: "system", content: getSystemPrompt() }];
         }
 
-        function restartSystem() {
-            location.reload();
-        }
+        function restartSystem() { location.reload(); }
 
         if ('speechSynthesis' in window) {
             window.speechSynthesis.onvoiceschanged = loadVoices;
@@ -500,24 +515,20 @@
             const key = document.getElementById('groq-key-input').value.trim();
             if (key) {
                 localStorage.setItem('groq_api_key', key);
-                let term = (currentMode === 'bro') ? 'bro' : 'señor';
-                addChatMessage(`JARVIS: Llave de Groq guardada correctamente en memoria, ${term}.`, "jarvis");
+                addChatMessage("JARVIS: Llave de Groq guardada correctamente en memoria, señor.", "jarvis");
             }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedKey = localStorage.getItem('groq_api_key');
-            if (savedKey) {
-                document.getElementById('groq-key-input').value = savedKey;
-            }
+            if (savedKey) { document.getElementById('groq-key-input').value = savedKey; }
         });
 
         async function queryGroqAI(userText) {
             const apiKey = localStorage.getItem('groq_api_key') || document.getElementById('groq-key-input').value.trim();
-            let term = (currentMode === 'bro') ? 'bro' : 'señor';
             
             if (!apiKey) {
-                return `Por favor, introduzca su API Key de Groq en el panel superior izquierdo para activar mis funciones cognitivas, ${term}.`;
+                return "Por favor, introduzca su API Key de Groq en el panel superior izquierdo para activar mis funciones cognitivas, señor.";
             }
 
             chatHistory[0].content = getSystemPrompt();
@@ -531,9 +542,9 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        model: "openai/gpt-oss-20b",
+                        model: "llama-3.3-70b-versatile", // Modelo grande oficial para evitar cortes
                         messages: chatHistory,
-                        max_tokens: 300,
+                        max_tokens: 4096,
                         temperature: 0.7
                     })
                 });
@@ -546,10 +557,10 @@
                 } else if (data.error) {
                     return `Error de Groq: ${data.error.message}`;
                 } else {
-                    return `Recepción de datos fallida con el clúster de Groq, ${term}.`;
+                    return "Recepción de datos fallida con el clúster de Groq, señor.";
                 }
             } catch (err) {
-                return `Error de red al conectar con los servidores de Groq, ${term}.`;
+                return "Error de red al conectar con los servidores de Groq, señor.";
             }
         }
 
@@ -564,9 +575,9 @@
             const lower = text.toLowerCase();
             let codeSnippet = '';
 
-            if (lower.includes("armadura") || lower.includes("traje") || lower.includes("mark")) {
+            if (lower.includes("armadura") || lower.includes("traje") || lower.includes("mark") || lower.includes("stark")) {
                 updateVisorModel('armor');
-                codeSnippet = '// PROTOCOLO STARK\nAssembly.loadArmorMatrix();\nStatus: [OK]';
+                codeSnippet = '// PROTOCOLO STARK ACTIVO\nAssembly.loadArmorMatrix();\nStatus: [OK] - Color Rojo/Dorado';
             } else if (lower.includes("esfera") || lower.includes("circulo") || lower.includes("circulito") || lower.includes("bola")) {
                 updateVisorModel('sphere');
                 codeSnippet = '// Geometría Esférica\nGeometry.createSphere();\nStatus: [OK]';
@@ -582,6 +593,9 @@
             } else if (lower.includes("pirámide") || lower.includes("piramide")) {
                 updateVisorModel('pyramid');
                 codeSnippet = '// Geometría Piramidal\nGeometry.createPyramid();\nStatus: [OK]';
+            } else if (lower.includes("triángulo") || lower.includes("triangulo")) {
+                updateVisorModel('triangulo');
+                codeSnippet = '// Matriz Triangular\nGeometry.createTriangle();\nStatus: [OK]';
             } else if (lower.includes("cubo") || lower.includes("caja") || lower.includes("cuadrado")) {
                 updateVisorModel('box');
                 codeSnippet = '// Matriz Cúbica\nGeometry.createBox();\nStatus: [OK]';
@@ -617,7 +631,7 @@
                 
                 speech.lang = 'es-ES';
                 speech.rate = voiceRateVal;
-                speech.pitch = (currentMode === 'bro') ? 0.9 : 0.7;
+                speech.pitch = 0.7; // Tono formal de mayordomo
 
                 if (voicesList.length > 0 && voicesList[selectedVoiceIndex]) {
                     speech.voice = voicesList[selectedVoiceIndex];
