@@ -181,7 +181,7 @@
         </div>
 
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis">JARVIS: Núcleo Neural actualizado. A su entera disposición, señor.</div>
+            <div class="msg jarvis">JARVIS: Sistemas visuales y cognitivos en línea. A su entera disposición, señor.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
@@ -287,18 +287,6 @@
                 } else if (type === 'pyramid') {
                     geom = new THREE.ConeGeometry(0.9, 1.3, 4);
                     mat = new THREE.MeshBasicMaterial({ color: 0xffff00, wireframe: true });
-                } else if (type === 'prism_tri') {
-                    geom = new THREE.CylinderGeometry(0.8, 0.8, 1.3, 3);
-                    mat = new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true });
-                } else if (type === 'prism_hex') {
-                    geom = new THREE.CylinderGeometry(0.8, 0.8, 1.3, 6);
-                    mat = new THREE.MeshBasicMaterial({ color: 0x00ff88, wireframe: true });
-                } else if (type === 'icosahedron') {
-                    geom = new THREE.IcosahedronGeometry(0.9);
-                    mat = new THREE.MeshBasicMaterial({ color: 0xff5500, wireframe: true });
-                } else if (type === 'dodecahedron') {
-                    geom = new THREE.DodecahedronGeometry(0.9);
-                    mat = new THREE.MeshBasicMaterial({ color: 0x9900ff, wireframe: true });
                 } else {
                     geom = new THREE.BoxGeometry(1.0, 1.0, 1.0);
                     mat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true });
@@ -356,7 +344,7 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        model: "openai/gpt-oss-20b",
+                        model: "llama-3.3-70b-versatile",
                         messages: chatHistory,
                         max_tokens: 300,
                         temperature: 0.7
@@ -392,7 +380,7 @@
             if (lower.includes("armadura") || lower.includes("traje") || lower.includes("mark")) {
                 updateVisorModel('armor');
                 codeSnippet = '// PROTOCOLO STARK\nAssembly.loadArmorMatrix();\nStatus: [OK]';
-            } else if (lower.includes("esfera") || lower.includes("circulo") || lower.includes("bola")) {
+            } else if (lower.includes("esfera") || lower.includes("circulo") || lower.includes("circulito") || lower.includes("bola")) {
                 updateVisorModel('sphere');
                 codeSnippet = '// Geometría Esférica\nGeometry.createSphere();\nStatus: [OK]';
             } else if (lower.includes("cilindro") || lower.includes("tubo")) {
@@ -407,19 +395,7 @@
             } else if (lower.includes("pirámide") || lower.includes("piramide")) {
                 updateVisorModel('pyramid');
                 codeSnippet = '// Geometría Piramidal\nGeometry.createPyramid();\nStatus: [OK]';
-            } else if (lower.includes("prisma triangular")) {
-                updateVisorModel('prism_tri');
-                codeSnippet = '// Prisma Triangular\nGeometry.createPrism(3);\nStatus: [OK]';
-            } else if (lower.includes("prisma hexagonal") || lower.includes("hexagono")) {
-                updateVisorModel('prism_hex');
-                codeSnippet = '// Prisma Hexagonal\nGeometry.createPrism(6);\nStatus: [OK]';
-            } else if (lower.includes("icosaedro")) {
-                updateVisorModel('icosahedron');
-                codeSnippet = '// Matriz Icosaédrica\nGeometry.createIcosahedron();\nStatus: [OK]';
-            } else if (lower.includes("dodecaedro")) {
-                updateVisorModel('dodecahedron');
-                codeSnippet = '// Matriz Dodecaédrica\nGeometry.createDodecahedron();\nStatus: [OK]';
-            } else if (lower.includes("cubo") || lower.includes("caja")) {
+            } else if (lower.includes("cubo") || lower.includes("caja") || lower.includes("cuadrado")) {
                 updateVisorModel('box');
                 codeSnippet = '// Matriz Cúbica\nGeometry.createBox();\nStatus: [OK]';
             }
@@ -454,10 +430,13 @@
                 
                 speech.lang = 'es-ES';
                 speech.rate = 1.0;
-                speech.pitch = 0.9;
+                speech.pitch = 0.7; // Tono más grave para simular voz masculina
 
                 let voices = window.speechSynthesis.getVoices();
-                let selectedVoice = voices.find(v => v.lang.startsWith('es') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.toLowerCase().includes('male'))) || voices.find(v => v.lang.startsWith('es'));
+                // Búsqueda estricta de voz masculina o natural en español
+                let selectedVoice = voices.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('pablo') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('microsoft raul') || v.name.toLowerCase().includes('gallego'))) 
+                                 || voices.find(v => v.lang.startsWith('es') && !v.name.toLowerCase().includes('female') && !v.name.toLowerCase().includes('helena') && !v.name.toLowerCase().includes('laura'))
+                                 || voices.find(v => v.lang.startsWith('es'));
 
                 if (selectedVoice) speech.voice = selectedVoice;
                 window.speechSynthesis.speak(speech);
@@ -476,6 +455,7 @@
     </script>
 </body>
 </html>
+
 
 
 
