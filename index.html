@@ -537,7 +537,7 @@
             if (savedKey) { document.getElementById('groq-key-input').value = savedKey; }
         });
 
-        // Configuración de Reconocimiento de Voz Continuo con activador "Jarvis"
+        // Configuración de Reconocimiento de Voz Continuo con activador "Jarvis" y corrector automático
         let recognition = null;
         let isListening = false;
         let shouldKeepListening = false;
@@ -556,11 +556,16 @@
             };
 
             recognition.onresult = (event) => {
-                const speechToText = event.results[event.results.length - 1][0].transcript.trim();
+                let speechToText = event.results[event.results.length - 1][0].transcript.trim();
                 const lowerText = speechToText.toLowerCase();
                 
                 if (lowerText.includes("jarvis")) {
                     let cleanOrder = speechToText.replace(/jarvis/gi, "").trim();
+                    
+                    // Corrector automático de errores comunes de voz en términos técnicos
+                    cleanOrder = cleanOrder.replace(/arduos/gi, "Arduinos");
+                    cleanOrder = cleanOrder.replace(/arduinis/gi, "Arduinos");
+
                     if (cleanOrder.length > 0) {
                         document.getElementById('user-input').value = cleanOrder;
                         sendPrompt();
@@ -734,3 +739,4 @@
     </script>
 </body>
 </html>
+
