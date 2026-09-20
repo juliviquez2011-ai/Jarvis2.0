@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>J.A.R.V.I.S. OS - Groq Neural Core</title>
+    <title>J.A.R.V.I.S. OS - Dual Neural Core (Gemini / Groq)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
@@ -51,19 +51,24 @@
             border-radius: 8px;
             font-size: 11px;
             display: flex;
-            align-items: center;
-            gap: 8px;
+            flex-direction: column;
+            gap: 6px;
             backdrop-filter: blur(5px);
             z-index: 100;
+        }
+        .api-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         #api-config-panel input {
             background: #000;
             border: 1px solid var(--theme-color);
             color: #00ff66;
-            padding: 4px 8px;
+            padding: 3px 6px;
             border-radius: 4px;
-            font-size: 11px;
-            width: 150px;
+            font-size: 10px;
+            width: 140px;
             outline: none;
         }
 
@@ -148,7 +153,7 @@
             padding: 5px;
             font-size: 10px;
             color: #00ff66;
-            overflow: hidden;
+            overflow-y: auto;
             white-space: pre-wrap;
         }
         .slot-title {
@@ -160,10 +165,10 @@
 
         #jarvis-chat {
             position: absolute;
-            top: 140px;
+            top: 170px;
             left: 30px;
             width: 400px;
-            max-height: 45vh;
+            max-height: 42vh;
             overflow-y: auto;
             background: rgba(2, 8, 19, 0.85);
             border-left: 3px solid var(--theme-color);
@@ -175,6 +180,18 @@
         .msg { margin-bottom: 12px; line-height: 1.4; }
         .msg.jarvis { color: var(--theme-color); }
         .msg.user { color: #ffffff; text-align: right; }
+        .model-link-btn {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 4px 8px;
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid var(--theme-color);
+            color: #fff;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 11px;
+        }
+        .model-link-btn:hover { background: var(--theme-color); color: #000; }
 
         #bottom-watermark {
             position: absolute;
@@ -259,9 +276,15 @@
     <div id="hud-container">
         
         <div id="api-config-panel" class="interactive">
-            <span>Groq Key:</span>
-            <input type="password" id="groq-key-input" placeholder="gsk_..." onchange="saveGroqKey()">
-            <button class="hud-btn" style="padding: 2px 8px; font-size: 10px;" onclick="saveGroqKey()">Guardar</button>
+            <div class="api-row">
+                <span style="width: 55px;">Gemini:</span>
+                <input type="password" id="gemini-key-input" placeholder="AIzaSy..." onchange="saveKeys()">
+            </div>
+            <div class="api-row">
+                <span style="width: 55px;">Groq:</span>
+                <input type="password" id="groq-key-input" placeholder="gsk_..." onchange="saveKeys()">
+            </div>
+            <button class="hud-btn" style="padding: 2px 8px; font-size: 10px; margin-left: 0; margin-top: 2px;" onclick="saveKeys()">Guardar Llaves</button>
         </div>
 
         <button id="settings-toggle-btn" class="hud-btn interactive" style="padding: 8px 12px; font-size: 13px;" onclick="toggleSettingsMenu()">⚙️ Config</button>
@@ -270,7 +293,7 @@
             <h3>PANEL DE CONFIGURACIÓN J.A.R.V.I.S.</h3>
             
             <div class="setting-group">
-                <label>Voz del Sistema (Español):</label>
+                <label>Voz del Sistema (Hombre / Español):</label>
                 <select id="voice-select" onchange="updateSelectedVoice(this.value)">
                     <option value="">Cargando voces...</option>
                 </select>
@@ -294,13 +317,13 @@
         </div>
 
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis" id="welcome-msg">JARVIS: Núcleo neural activo, señor.</div>
+            <div class="msg jarvis" id="welcome-msg">JARVIS: Núcleo neural dual activo, señor.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
-            <div class="slot-title">SLOT 3D & COMPILADOR CAD</div>
+            <div class="slot-title">SLOT 3D & BUSCADOR CAD</div>
             <div id="viewer-3d"></div>
-            <div id="cad-code-display">// Núcleo Neural Activo...\n> A la espera de sus instrucciones, señor.</div>
+            <div id="cad-code-display">// Sistema de Red Listos...\n> Pida un modelo para buscar enlaces en internet, señor.</div>
         </div>
 
         <div id="bottom-watermark">J.A.R.V.I.S.</div>
@@ -498,14 +521,26 @@
                 return;
             }
 
+            // Ordenar priorizando nombres masculinos típicos en dispositivos Apple/Android
+            voicesList.sort((a, b) => {
+                const nameA = a.name.toLowerCase();
+                const nameB = b.name.toLowerCase();
+                const isMaleA = nameA.includes('pablo') || nameA.includes('alvaro') || nameA.includes('jorge') || nameA.includes('carlos') || nameA.includes('diego') || nameA.includes('males') || nameA.includes('david');
+                const isMaleB = nameB.includes('pablo') || nameB.includes('alvaro') || nameB.includes('jorge') || nameB.includes('carlos') || nameB.includes('diego') || nameB.includes('males') || nameB.includes('david');
+                return (isMaleB ? 1 : 0) - (isMaleA ? 1 : 0);
+            });
+
             voicesList.forEach((voice, index) => {
                 let opt = document.createElement('option');
                 opt.value = index;
                 let tag = voice.name.toLowerCase();
-                let genderHint = (tag.includes('pablo') || tag.includes('raul') || tag.includes('alvaro') || tag.includes('jorge') || tag.includes('male') || tag.includes('david') || tag.includes('carlos')) ? ' [Hombre]' : '';
+                let genderHint = (tag.includes('pablo') || tag.includes('alvaro') || tag.includes('jorge') || tag.includes('carlos') || tag.includes('diego') || tag.includes('david')) ? ' [Voz Hombre]' : '';
                 opt.text = `${voice.name} (${voice.lang})${genderHint}`;
                 select.appendChild(opt);
             });
+
+            // Seleccionar automáticamente la primera masculina si existe
+            selectedVoiceIndex = 0;
         }
 
         function updateSelectedVoice(index) { selectedVoiceIndex = parseInt(index); }
@@ -524,20 +559,22 @@
             setTimeout(loadVoices, 300);
         }
 
-        function saveGroqKey() {
-            const key = document.getElementById('groq-key-input').value.trim();
-            if (key) {
-                localStorage.setItem('groq_api_key', key);
-                addChatMessage("JARVIS: Llave de Groq guardada correctamente en memoria, señor.", "jarvis");
-            }
+        function saveKeys() {
+            const gKey = document.getElementById('gemini-key-input').value.trim();
+            const groqKey = document.getElementById('groq-key-input').value.trim();
+            if (gKey) localStorage.setItem('gemini_api_key', gKey);
+            if (groqKey) localStorage.setItem('groq_api_key', groqKey);
+            addChatMessage("JARVIS: Credenciales de IA guardadas en memoria, señor.", "jarvis");
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            const savedKey = localStorage.getItem('groq_api_key');
-            if (savedKey) { document.getElementById('groq-key-input').value = savedKey; }
+            const savedGKey = localStorage.getItem('gemini_api_key');
+            const savedGroqKey = localStorage.getItem('groq_api_key');
+            if (savedGKey) document.getElementById('gemini-key-input').value = savedGKey;
+            if (savedGroqKey) document.getElementById('groq-key-input').value = savedGroqKey;
         });
 
-        // Configuración de Reconocimiento de Voz Continuo con activador "Jarvis" y corrector automático
+        // Configuración de Reconocimiento de Voz
         let recognition = null;
         let isListening = false;
         let shouldKeepListening = false;
@@ -561,8 +598,6 @@
                 
                 if (lowerText.includes("jarvis")) {
                     let cleanOrder = speechToText.replace(/jarvis/gi, "").trim();
-                    
-                    // Corrector automático de errores comunes de voz en términos técnicos
                     cleanOrder = cleanOrder.replace(/arduos/gi, "Arduinos");
                     cleanOrder = cleanOrder.replace(/arduinis/gi, "Arduinos");
 
@@ -573,10 +608,6 @@
                         speakJarvis("A su servicio, señor.");
                     }
                 }
-            };
-
-            recognition.onerror = (event) => {
-                console.error("Error de voz:", event.error);
             };
 
             recognition.onend = () => {
@@ -599,7 +630,7 @@
 
         function toggleSpeechRecognition() {
             if (!recognition) {
-                alert("Su navegador no soporta reconocimiento de voz nativo, señor. Intente usar Safari en el iPad.");
+                alert("Su navegador no soporta reconocimiento de voz nativo, señor.");
                 return;
             }
             if (isListening) {
@@ -608,52 +639,76 @@
                 stopListeningState();
             } else {
                 shouldKeepListening = true;
-                try {
-                    recognition.start();
-                } catch(e) {
-                    recognition.stop();
-                }
+                try { recognition.start(); } catch(e) { recognition.stop(); }
             }
         }
 
-        async function queryGroqAI(userText) {
-            const apiKey = localStorage.getItem('groq_api_key') || document.getElementById('groq-key-input').value.trim();
-            
-            if (!apiKey) {
-                return "Por favor, introduzca su API Key de Groq en el panel superior izquierdo para activar mis funciones cognitivas, señor.";
-            }
+        // Sistema Dual de Inteligencia Artificial (Gemini 3.5 con respaldo en Groq)
+        async function queryAI(userText) {
+            const geminiKey = localStorage.getItem('gemini_api_key') || document.getElementById('gemini-key-input').value.trim();
+            const groqKey = localStorage.getItem('groq_api_key') || document.getElementById('groq-key-input').value.trim();
 
-            chatHistory[0].content = getSystemPrompt();
             chatHistory.push({ role: "user", content: userText });
 
-            try {
-                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${apiKey}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        model: "openai/gpt-oss-20b",
-                        messages: chatHistory,
-                        max_tokens: 300,
-                        temperature: 0.7
-                    })
-                });
+            // 1. Intentar primero con Gemini (Gemini 2.5/3.5 Flash o Pro endpoint actual)
+            if (geminiKey) {
+                try {
+                    // Mapeo adaptado para el formato de historial de Gemini API
+                    const contents = chatHistory.filter(m => m.role !== 'system').map(m => ({
+                        role: m.role === 'assistant' ? 'model' : 'user',
+                        parts: [{ text: m.content }]
+                    }));
 
-                const data = await response.json();
-                if (data.choices && data.choices[0] && data.choices[0].message) {
-                    const reply = data.choices[0].message.content;
-                    chatHistory.push({ role: "assistant", content: reply });
-                    return reply;
-                } else if (data.error) {
-                    return `Error de Groq: ${data.error.message}`;
-                } else {
-                    return "Recepción de datos fallida con el clúster de Groq, señor.";
+                    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            system_instruction: { parts: [{ text: getSystemPrompt() }] },
+                            contents: contents
+                        })
+                    });
+
+                    const data = await geminiResponse.json();
+                    if (data.candidates && data.candidates[0].content.parts[0].text) {
+                        const reply = data.candidates[0].content.parts[0].text;
+                        chatHistory.push({ role: "assistant", content: reply });
+                        return reply;
+                    }
+                } catch (err) {
+                    console.warn("Gemini agotado o con error, saltando a Groq...", err);
                 }
-            } catch (err) {
-                return "Error de red al conectar con los servidores de Groq, señor.";
             }
+
+            // 2. Respaldo Automático con Groq si Gemini falla o no tiene llave
+            if (groqKey) {
+                try {
+                    chatHistory[0].content = getSystemPrompt();
+                    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${groqKey}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: "openai/gpt-oss-20b",
+                            messages: chatHistory,
+                            max_tokens: 300,
+                            temperature: 0.7
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.choices && data.choices[0] && data.choices[0].message) {
+                        const reply = data.choices[0].message.content;
+                        chatHistory.push({ role: "assistant", content: reply });
+                        return "[Vía Groq] " + reply;
+                    }
+                } catch (err) {
+                    console.error("Error en Groq:", err);
+                }
+            }
+
+            return "Por favor, configure su llave de Gemini o Groq en el panel superior izquierdo para habilitar mis sistemas cognitivos, señor.";
         }
 
         async function sendPrompt() {
@@ -667,26 +722,32 @@
             const lower = text.toLowerCase();
             let codeSnippet = '';
 
-            // Detectar comandos Stark / Mark con mayor flexibilidad
-            if (lower.includes("armadura") || lower.includes("traje") || lower.includes("mark") || lower.includes("stark")) {
+            // Detección de Modelos 3D y Búsqueda en Internet
+            if (lower.includes("busca") || lower.includes("modelo") || lower.includes("stl") || lower.includes("imprimir")) {
+                let searchTerm = encodeURIComponent(text.replace(/jarvis|busca|el modelo|de|para|imprimir/gi, "").trim());
+                codeSnippet = `// BÚSQUEDA CAD EN RED\nQuery: "${decodeURIComponent(searchTerm)}"\nStatus: [ENLACES GENERADOS]`;
+                
+                let searchHtml = `JARVIS: He localizado registros en la red para su solicitud, señor.<br>
+                <a class="model-link-btn" href="https://www.printables.com/search/models?q=${searchTerm}" target="_blank">🔍 Buscar en Printables</a>
+                <a class="model-link-btn" href="https://www.thingiverse.com/search?q=${searchTerm}" target="_blank">🔍 Buscar en Thingiverse</a>`;
+                
+                document.getElementById('cad-code-display').innerText = codeSnippet;
+                addChatMessage(searchHtml, "jarvis", true);
+                speakJarvis("He localizado los enlaces de descarga para su modelo en la red, señor.");
+                return;
+            }
+
+            // Geometrías predeterminadas del visor
+            if (lower.includes("armadura") || lower.includes("traje") || lower.includes("mark")) {
                 updateVisorModel('armor');
                 codeSnippet = '// PROTOCOLO STARK\nAssembly.loadArmorMatrix();\nStatus: [OK]';
-            } else if (lower.includes("esfera") || lower.includes("circulo") || lower.includes("bola")) {
+            } else if (lower.includes("esfera")) {
                 updateVisorModel('sphere');
                 codeSnippet = '// Geometría Esférica\nGeometry.createSphere();\nStatus: [OK]';
-            } else if (lower.includes("cilindro") || lower.includes("tubo")) {
+            } else if (lower.includes("cilindro")) {
                 updateVisorModel('cylinder');
                 codeSnippet = '// Geometría Cilíndrica\nGeometry.createCylinder();\nStatus: [OK]';
-            } else if (lower.includes("anillo") || lower.includes("torus")) {
-                updateVisorModel('torus');
-                codeSnippet = '// Geometría Toroidal\nGeometry.createTorus();\nStatus: [OK]';
-            } else if (lower.includes("cono")) {
-                updateVisorModel('cone');
-                codeSnippet = '// Geometría Cónica\nGeometry.createCone();\nStatus: [OK]';
-            } else if (lower.includes("pirámide") || lower.includes("piramide")) {
-                updateVisorModel('pyramid');
-                codeSnippet = '// Geometría Piramidal\nGeometry.createPyramid();\nStatus: [OK]';
-            } else if (lower.includes("cubo") || lower.includes("caja") || lower.includes("cuadrado")) {
+            } else if (lower.includes("cubo") || lower.includes("caja")) {
                 updateVisorModel('box');
                 codeSnippet = '// Matriz Cúbica\nGeometry.createBox();\nStatus: [OK]';
             }
@@ -695,7 +756,7 @@
                 document.getElementById('cad-code-display').innerText = codeSnippet;
             }
 
-            const aiResponse = await queryGroqAI(text);
+            const aiResponse = await queryAI(text);
             addChatMessage("JARVIS: " + aiResponse, "jarvis");
             speakJarvis(aiResponse);
         }
@@ -716,12 +777,13 @@
         function speakJarvis(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const cleanText = text.replace(/["'«»\[\]]/g, '');
+                // Limpiar etiquetas HTML si las hubiera para la locución de voz
+                const cleanText = text.replace(/<[^>]*>?/gm, '').replace(/["'«»\[\]]/g, '');
                 const speech = new SpeechSynthesisUtterance(cleanText);
                 
                 speech.lang = 'es-ES';
                 speech.rate = voiceRateVal;
-                speech.pitch = 0.7;
+                speech.pitch = 0.6; // Tono más grave para simular voz de asistente formal
 
                 if (voicesList.length > 0 && voicesList[selectedVoiceIndex]) {
                     speech.voice = voicesList[selectedVoiceIndex];
@@ -739,4 +801,3 @@
     </script>
 </body>
 </html>
-
