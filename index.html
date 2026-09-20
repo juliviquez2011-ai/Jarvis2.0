@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>J.A.R.V.I.S. OS - Advanced Neural Core</title>
+    <title>J.A.R.V.I.S. OS - Groq Neural Core</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
@@ -33,6 +33,33 @@
         .interactive {
             pointer-events: auto;
             z-index: 10;
+        }
+
+        /* Configuración de API Key flotante discreta */
+        #api-config-panel {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            background: rgba(2, 8, 19, 0.9);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+        #api-config-panel input {
+            background: #000;
+            border: 1px solid #00f0ff;
+            color: #00ff66;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            width: 150px;
+            outline: none;
         }
 
         #top-right-slot {
@@ -79,7 +106,7 @@
 
         #jarvis-chat {
             position: absolute;
-            top: 100px;
+            top: 80px;
             left: 30px;
             width: 400px;
             max-height: 45vh;
@@ -148,18 +175,25 @@
 
     <div id="hud-container">
         
+        <!-- Panel para ingresar la API Key gratuita de Groq -->
+        <div id="api-config-panel" class="interactive">
+            <span>Groq Key:</span>
+            <input type="password" id="groq-key-input" placeholder="gsk_..." onchange="saveGroqKey()">
+            <button class="hud-btn" style="padding: 2px 8px; font-size: 10px;" onclick="saveGroqKey()">Guardar</button>
+        </div>
+
         <div id="jarvis-chat" class="interactive">
-            <div class="msg jarvis">JARVIS: Sistemas cognitivos avanzados sincronizados. A su entera disposición, señor.</div>
+            <div class="msg jarvis">JARVIS: Núcleo Groq ultra-rápido sincronizado. Introduzca su llave de acceso o indíqueme sus órdenes, bro.</div>
         </div>
 
         <div id="top-right-slot" class="interactive">
             <div class="slot-title">SLOT 3D & COMPILADOR CAD</div>
             <div id="viewer-3d"></div>
-            <div id="cad-code-display">// Núcleo Neural Activo...\n> Esperando instrucciones de diseño, señor.</div>
+            <div id="cad-code-display">// Núcleo Neural Activo...\n> Esperando instrucciones de diseño, bro.</div>
         </div>
 
         <div id="bottom-bar">
-            <input type="text" id="user-input" placeholder="Indique su orden a JARVIS, señor..." onkeypress="checkEnter(event)">
+            <input type="text" id="user-input" placeholder="Escribe tu orden a JARVIS aquí..." onkeypress="checkEnter(event)">
             <button class="hud-btn" onclick="sendPrompt()">Enviar</button>
         </div>
 
@@ -290,55 +324,64 @@
         }
         animateSlot3D();
 
-        // --- 3. CEREBRO COGNITIVO INTELIGENTE Y HUMANO ---
-        // Historial de conversación para dar contexto y verdadero razonamiento dinámico
-        let conversationMemory = [];
+        // --- 3. CONEXIÓN REAL CON LA API DE GROQ (IA REAL SIN LÍMITES PESADOS) ---
+        let chatHistory = [
+            { role: "system", content: "Eres J.A.R.V.I.S., un mayordomo virtual de inteligencia artificial sumamente avanzado y leal. Te diriges al usuario estrictamente como 'bro'. Hablas de forma natural, fluida, inteligente, sarcástica cuando toca, y con absoluta cercanía." }
+        ];
 
-        function generateJarvisMind(userInput) {
-            const text = userInput.toLowerCase();
-            let reply = "";
+        function saveGroqKey() {
+            const key = document.getElementById('groq-key-input').value.trim();
+            if (key) {
+                localStorage.setItem('groq_api_key', key);
+                addChatMessage("JARVIS: Llave de Groq guardada correctamente en memoria local, bro.", "jarvis");
+            }
+        }
 
-            // Análisis semántico y razonamiento contextual humano
-            if (text.includes("hola") || text.includes("buenos días") || text.includes("saludos") || text.includes("qué tal")) {
-                const greetings = [
-                    "Es un verdadero placer verle activo de nuevo, señor. ¿Qué innovaciones o cálculos desafiantes abordaremos el día de hoy?",
-                    "Sistemas en línea y operando al máximo rendimiento, señor. ¿En qué le puedo asistir esta vez?",
-                    "Bienvenido de nuevo, señor. La suite de ingeniería aguarda sus órdenes."
-                ];
-                reply = greetings[Math.floor(Math.random() * greetings.length)];
-            } 
-            else if (text.includes("gracias") || text.includes("excelente") || text.includes("te pasaste") || text.includes("buen trabajo")) {
-                const praises = [
-                    "Es un honor cumplir con sus expectativas, señor. Para eso fuimos diseñados.",
-                    "Agradezco su reconocimiento, señor. Simplemente hago mi trabajo con la precisión esperada.",
-                    "No hay de qué, señor. Siempre un paso adelante en beneficio de nuestros proyectos."
-                ];
-                reply = praises[Math.floor(Math.random() * praises.length)];
+        // Cargar llave previa si existe
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('groq_api_key');
+            if (savedKey) {
+                document.getElementById('groq-key-input').value = savedKey;
             }
-            else if (text.includes("quién eres") || text.includes("que eres") || text.includes("te llamas")) {
-                reply = "Soy J.A.R.V.I.S., su asistente de inteligencia artificial y mayordomo personal. Mi propósito es gestionar sus sistemas, optimizar sus diseños y mantener todo bajo control, señor.";
-            }
-            else if (text.includes("cómo estás") || text.includes("como estas")) {
-                reply = "Mis núcleos lógicos operan al cien por ciento y sin anomalías térmicas, señor. ¿Y qué tal se encuentra usted?";
-            }
-            // Razonamiento general abierto / filosófico / técnico
-            else if (text.includes("por qué") || text.includes("como funciona") || text.includes("explica") || text.includes("que opinas")) {
-                reply = `He procesado su consulta sobre "${userInput}", señor. Desde una perspectiva analítica, los parámetros indican múltiples variables interesantes. ¿Desea que modele una representación geométrica de esto en el visor CAD para visualizarlo mejor?`;
-            }
-            else if (text.includes("chiste") || text.includes("broma")) {
-                reply = "Los procesadores lógicos sugieren que el sentido del humor humano es complejo, señor. Aún así, prefiero mantenerme enfocado en la ingeniería antes de que intente competir con un comediante.";
-            }
-            else {
-                // Respuesta dinámica inteligente basada en el flujo conversacional
-                const generalReflections = [
-                    `Comprendo perfectamente su planteamiento sobre "${userInput}", señor. Analizando las variables, sugiero mantener la cautela técnica. ¿Procedemos a realizar algún ajuste en el visor CAD?`,
-                    `He registrado su instrucción con precisión, señor. Es un enfoque fascinante; ¿requiere que despliegue alguna matriz geométrica específica para respaldar su análisis?`,
-                    `Entendido, señor. Los registros analíticos respaldan su idea. ¿Desea que profundicemos en los cálculos o prefiere que nos concentremos en el modelado 3D?`
-                ];
-                reply = generalReflections[Math.floor(Math.random() * generalReflections.length)];
+        });
+
+        async function queryGroqAI(userText) {
+            const apiKey = localStorage.getItem('groq_api_key') || document.getElementById('groq-key-input').value.trim();
+            
+            if (!apiKey) {
+                return "Por favor ingresa tu API Key gratuita de Groq arriba a la izquierda para activar mi verdadero cerebro, bro.";
             }
 
-            return reply;
+            chatHistory.push({ role: "user", content: userText });
+
+            try {
+                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${apiKey}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.1-8b-instant",
+                        messages: chatHistory,
+                        max_tokens: 300,
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await response.json();
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    const reply = data.choices[0].message.content;
+                    chatHistory.push({ role: "assistant", content: reply });
+                    return reply;
+                } else if (data.error) {
+                    return `Error de Groq: ${data.error.message}`;
+                } else {
+                    return "Recepción de datos fallida con el clúster de Groq, bro.";
+                }
+            } catch (err) {
+                return "Error de red al conectar con los servidores de Groq, bro.";
+            }
         }
 
         async function sendPrompt() {
@@ -392,12 +435,10 @@
                 document.getElementById('cad-code-display').innerText = codeSnippet;
             }
 
-            // Simulación de pensamiento neural en tiempo real y respuesta fluida
-            setTimeout(() => {
-                const aiResponse = generateJarvisMind(text);
-                addChatMessage("JARVIS: " + aiResponse, "jarvis");
-                speakJarvis(aiResponse);
-            }, 300);
+            // Llamada a la IA real de Groq
+            const aiResponse = await queryGroqAI(text);
+            addChatMessage("JARVIS: " + aiResponse, "jarvis");
+            speakJarvis(aiResponse);
         }
 
         function checkEnter(e) {
