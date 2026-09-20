@@ -227,34 +227,41 @@
         }
         animateHolo();
 
-        // --- 2. VISOR 3D SUPERIOR DERECHO (GEOMETRÍA Y GRUPO DINÁMICO) ---
+        // --- 2. VISOR 3D SUPERIOR DERECHO ---
         const viewerContainer = document.getElementById('viewer-3d');
         const scene3D = new THREE.Scene();
-        const camera3D = new THREE.PerspectiveCamera(75, viewerContainer.clientWidth / viewerContainer.clientHeight, 0.1, 1000);
+        const camera3D = new THREE.PerspectiveCamera(60, viewerContainer.clientWidth / viewerContainer.clientHeight, 0.1, 1000);
         const renderer3D = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         renderer3D.setSize(viewerContainer.clientWidth, viewerContainer.clientHeight);
         viewerContainer.appendChild(renderer3D.domElement);
 
         let activeMeshGroup = new THREE.Group();
         scene3D.add(activeMeshGroup);
-        camera3D.position.z = 3.5;
+        camera3D.position.z = 3.2;
 
         function updateVisorModel(type) {
             while(activeMeshGroup.children.length > 0){ 
-                activeMeshGroup.remove(activeMeshGroup.children[0]); 
+                const obj = activeMeshGroup.children[0];
+                activeMeshGroup.remove(obj);
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) obj.material.dispose();
             }
 
             if (type === 'armor') {
                 const matGold = new THREE.MeshBasicMaterial({ color: 0xffaa00, wireframe: true });
                 const matRed = new THREE.MeshBasicMaterial({ color: 0xff0033, wireframe: true });
-                const chestBox = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.6), matRed);
+                
+                const chestBox = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.1, 0.5), matRed);
                 chestBox.position.set(0, 0, 0);
-                const helmetBox = new THREE.Mesh(new THREE.DodecahedronGeometry(0.5), matGold);
-                helmetBox.position.set(0, 1.0, 0);
-                const shoulderL = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), matGold);
-                shoulderL.position.set(-0.7, 0.5, 0);
-                const shoulderR = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), matGold);
-                shoulderR.position.set(0.7, 0.5, 0);
+                
+                const helmetBox = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4), matGold);
+                helmetBox.position.set(0, 0.85, 0);
+                
+                const shoulderL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.35), matGold);
+                shoulderL.position.set(-0.6, 0.4, 0);
+                
+                const shoulderR = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.35), matGold);
+                shoulderR.position.set(0.6, 0.4, 0);
 
                 activeMeshGroup.add(chestBox);
                 activeMeshGroup.add(helmetBox);
@@ -263,16 +270,16 @@
             } else {
                 let geom, mat;
                 if (type === 'sphere') {
-                    geom = new THREE.SphereGeometry(1.0, 16, 16);
+                    geom = new THREE.SphereGeometry(0.9, 16, 16);
                     mat = new THREE.MeshBasicMaterial({ color: 0x00ffcc, wireframe: true });
                 } else if (type === 'cylinder') {
-                    geom = new THREE.CylinderGeometry(0.8, 0.8, 1.5, 16);
+                    geom = new THREE.CylinderGeometry(0.6, 0.6, 1.3, 16);
                     mat = new THREE.MeshBasicMaterial({ color: 0xffaa00, wireframe: true });
                 } else if (type === 'torus') {
-                    geom = new THREE.TorusGeometry(0.9, 0.3, 16, 32);
+                    geom = new THREE.TorusGeometry(0.7, 0.25, 16, 32);
                     mat = new THREE.MeshBasicMaterial({ color: 0xff0055, wireframe: true });
                 } else {
-                    geom = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+                    geom = new THREE.BoxGeometry(1.0, 1.0, 1.0);
                     mat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true });
                 }
                 const singleMesh = new THREE.Mesh(geom, mat);
@@ -285,14 +292,14 @@
         function animateSlot3D() {
             requestAnimationFrame(animateSlot3D);
             if (activeMeshGroup) {
-                activeMeshGroup.rotation.x += 0.008;
-                activeMeshGroup.rotation.y += 0.012;
+                activeMeshGroup.rotation.x += 0.01;
+                activeMeshGroup.rotation.y += 0.015;
             }
             renderer3D.render(scene3D, camera3D);
         }
         animateSlot3D();
 
-        // --- 3. LÓGICA DE INTERACCIÓN Y CÁMARA (ANÁLISIS DE OBJETOS / CUBO DE RUBIK) ---
+        // --- 3. LÓGICA DE INTERACCIÓN Y CÁMARA ---
         function triggerCamera() {
             document.getElementById('camera-input').click();
         }
@@ -300,10 +307,9 @@
         function handleImage(event) {
             const file = event.target.files[0];
             if (file) {
-                addChatMessage("Imagen capturada (Ej. Cubo de Rubik). Analizando estado del objeto...", "user");
+                addChatMessage("Imagen capturada. Analizando estado del objeto...", "user");
                 speakJarvis("Analizando patrón visual y estructura del objeto, señor.");
                 
-                // Simula el análisis visual y búsqueda de solución en Google después de hablar
                 setTimeout(() => {
                     addChatMessage("JARVIS: Patrón detectado. Consultando algoritmos de resolución en red...", "jarvis");
                     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent("como resolver cubo de rubik algoritmos pasos")}`;
@@ -355,7 +361,7 @@
             addChatMessage("JARVIS: Código recibido en el slot CAD. Compilando modelo...", "jarvis");
             speakJarvis("A la orden, señor. Compilando modelo en el visor.");
             updateVisorModel('box');
-            updateCadCode("// Archivo Externo Compilado\nMesh.loadBox(1.2);\nStatus: OK");
+            updateCadCode("// Archivo Externo Compilado\nMesh.loadBox(1.0);\nStatus: OK");
         }
 
         // --- 4. SÍNTESIS DE VOZ SINCRONIZADA ---
@@ -447,7 +453,7 @@
             try { recognition.start(); } catch(e) {}
         }
 
-        // --- 6. PROCESADOR INTELIGENTE RIGUROSO (SEPARACIÓN CLARA DE INTENCIONES) ---
+        // --- 6. PROCESADOR INTELIGENTE ---
         async function processJarvisCommand(command) {
             const lower = command.toLowerCase();
             const isJarvisCalled = lower.includes("jarvis");
@@ -457,12 +463,12 @@
                 speechText += "A la orden, señor. ";
             }
 
-            // 1. SALUDOS (Prioridad alta para evitar que vayan a red)
+            // 1. SALUDOS
             if (lower === "hola" || lower === "jarvis hola" || lower.includes("saludos") || lower.includes("buenos días")) {
                 addChatMessage("JARVIS: Sistemas operativos funcionando de manera óptima, señor.", "jarvis");
                 speakJarvis(speechText + "Sistemas operativos en línea y funcionando de manera óptima, señor.");
             }
-            // 2. AGRADECIMIENTOS (Prioridad alta)
+            // 2. AGRADECIMIENTOS
             else if (lower === "gracias" || lower === "jarvis gracias" || lower.includes("muchas gracias")) {
                 addChatMessage("JARVIS: A su servicio, señor.", "jarvis");
                 speakJarvis(speechText + "A su servicio, señor. Para eso estamos.");
@@ -475,24 +481,24 @@
                 addChatMessage("JARVIS: Iniciando protocolo de despliegue de armadura en visor CAD.", "jarvis");
                 speakJarvis(speechText + "Iniciando protocolo de ensamblaje de armadura, señor.");
             }
-            // 4. DISEÑAR / CREAR / MODELAR FIGURAS GEOMÉTRICAS
+            // 4. DISEÑAR / CREAR / MODELAR FIGURAS
             else if (lower.includes("diseña") || lower.includes("crea") || lower.includes("modelo")) {
                 let shapeType = 'box';
                 let shapeName = 'cubo';
-                let codeSnippet = '// Estructura Rectangular\nGeometry.createBox(1.2);\nMatrix.applyTransform();';
+                let codeSnippet = '// Estructura Rectangular\nGeometry.createBox(1.0);\nMatrix.applyTransform();';
 
                 if (lower.includes("esfera") || lower.includes("bola") || lower.includes("circulo")) {
                     shapeType = 'sphere';
                     shapeName = 'esfera';
-                    codeSnippet = '// Núcleo Esférico Radial\nGeometry.createSphere(1.0);\nShader.applyWireframe();';
+                    codeSnippet = '// Núcleo Esférico Radial\nGeometry.createSphere(0.9);\nShader.applyWireframe();';
                 } else if (lower.includes("cilindro") || lower.includes("tubo")) {
                     shapeType = 'cylinder';
                     shapeName = 'cilindro';
-                    codeSnippet = '// Componente Cilíndrico\nGeometry.createCylinder(0.8, 1.5);\nAxis.alignZ();';
+                    codeSnippet = '// Componente Cilíndrico\nGeometry.createCylinder(0.6, 1.3);\nAxis.alignZ();';
                 } else if (lower.includes("anillo") || lower.includes("aro") || lower.includes("toro")) {
                     shapeType = 'torus';
                     shapeName = 'anillo toroidal';
-                    codeSnippet = '// Estructura Toroidal\nGeometry.createTorus(0.9, 0.3);\nRotation.setAngle(45);';
+                    codeSnippet = '// Estructura Toroidal\nGeometry.createTorus(0.7, 0.25);\nRotation.setAngle(45);';
                 }
 
                 updateVisorModel(shapeType);
@@ -501,7 +507,7 @@
                 addChatMessage(`JARVIS: Generando modelo de ${shapeName} en visor CAD.`, "jarvis");
                 speakJarvis(speechText + `Generando diseño de ${shapeName} en el visor.`);
             } 
-            // 5. BÚSQUEDA / INVESTIGACIÓN EN RED (Únicamente si lleva explícitamente palabras de búsqueda)
+            // 5. BÚSQUEDA / INVESTIGACIÓN EN RED
             else if (lower.includes("investiga") || lower.includes("busca") || lower.includes("qué es") || lower.includes("cómo es") || lower.includes("como resolver")) {
                 let queryClean = command
                     .replace(/jarvis/gi, "")
@@ -527,7 +533,7 @@
                     window.location.href = searchUrl;
                 });
             }
-            // 6. CUALQUIER OTRO COMANDO O TEXTO GENERAL
+            // 6. OTROS
             else {
                 addChatMessage("JARVIS: Comando recibido, señor. Usa 'hola', 'gracias', 'diseña [cubo/esfera/traje]' o 'investiga'.", "jarvis");
                 speakJarvis(speechText + "Comando recibido, señor.");
@@ -542,6 +548,7 @@
     </script>
 </body>
 </html>
+
 
 
 
